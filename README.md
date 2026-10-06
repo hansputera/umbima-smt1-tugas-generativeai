@@ -1,36 +1,80 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Nilai — AI-Assisted Academic Grading Platform
 
-## Getting Started
+A web platform for running courses, assignments, submissions, and grading end-to-end, with optional AI-assisted grading (LLM + RAG over document chunks). Three roles: **Admin**, **Dosen (lecturer)**, and **Mahasiswa (student)**. The display name, footer text, and logo are configurable from the admin panel (Admin → Aplikasi; defaults to "MiniCourse").
 
-First, run the development server:
+## Features
+
+**Admin**
+- User management (create/edit/activate) with **Excel import**: upload `.xlsx` → preview → confirm; existing emails are skipped, never overwritten; template download provided
+- Classes with **Periode** (e.g. 2025/2026 Ganjil) and **Kelas** (section), student placement/enrollment
+- App branding: name, footer, logo (used for browser title, navbar, login, breadcrumbs, footer)
+- Model settings: OpenAI-compatible chat + embeddings endpoints, API keys
+
+**Dosen**
+- Courses, topics (pertemuan), assignments in 4 types: **PG (multiple choice), Essay, PDF, DOCX**
+- Weighted rubric (criteria × levels, drag & drop) and release modes: *review* (manual publish) or *langsung* (instant AI grading on submit)
+- Submissions overview, manual grading or **grade with model**, draft → publish workflow
+- Read-only view of course period/section
+
+**Mahasiswa**
+- Course catalog with index, tasks overview, quiz-taking UI with question navigator
+- Submissions (text, file upload), grades with predikat (A–D) and feedback
+
+**AI grading**
+- DOCX/PDF extraction (mammoth/unpdf) → chunked → embedded into `pgvector` → top-k retrieval feeds an OpenAI-compatible `/chat/completions` call; grading source is recorded per grade (`code` | `model` | manual)
+
+## Tech stack
+
+Next.js 16 (App Router, server actions, `proxy.ts`), React 19, Tailwind CSS 4, PostgreSQL 17 + pgvector, ExcelJS, Docker Compose.
+
+## Quickstart (local)
+
+Prerequisites: Docker + Docker Compose.
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone <repo> && cd <repo>
+cp .env.example .env.local   # then edit the values
+docker compose up -d --build  # app on http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- **Dev mode** (hot reload on port 3001): `docker compose --profile dev up -d`
+- **Reset database** (drops all data, re-seeds): `docker compose --profile dev down -v && docker compose up -d --build`
+- **Seed accounts** (password `password123`):
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Role | Email |
+|---|---|
+| Admin | audyah@nilai.test |
+| Dosen | ramadan@nilai.test |
+| Mahasiswa | aldy@nilai.test, miratil@nilai.test, ismail@nilai.test, fitri@nilai.test |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Seeds and schema migrations run automatically on first boot.
 
-## Learn More
+## Configuration (`.env.local`)
 
-To learn more about Next.js, take a look at the following resources:
+| Variable | Purpose |
+|---|---|
+| `SESSION_SECRET` | Cookie signing secret — **must** be a long random string |
+| `DATABASE_URL` | Overridden by compose; only needed for `npm run dev` outside Docker |
+| `EMBEDDING_DIM` | Vector size, must match the embedding model (default 1536) |
+| `EMBEDDING_TOP_K` | RAG chunks retrieved per grading prompt (default 6) |
+| `LLM_*` / `EMB_*` | Chat + embeddings base URL, model, API key (seeded to `/admin/settings` on first boot; runtime edits there win until the DB volume is reset) |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Deployment
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+The app is containerized — any Docker host works. Recommended: **a small VPS** (needs ≥ 2 GB RAM for the Next build).
 
-## Deploy on Vercel
+```bash
+git clone <repo> && cd <repo>
+# create .env.local: SESSION_SECRET, LLM_*, EMB_* (see above)
+docker compose up -d --build
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Production checklist:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Set a strong `SESSION_SECRET` (the code falls back to a dev secret if unset → forgeable sessions)
+- The compose file ships dev Postgres credentials (`nilai:nilai`) and publishes `5432` — change the password and remove (or bind to `127.0.0.1`) the `db.ports` mapping before going public
+- Put a reverse proxy (Caddy/nginx/Traefik) in front for HTTPS → `localhost:3000`
+- Back up the `pgdata` volume regularly (`pg_dump`)
+- The `dev` profile is for local development only — don't run it in production
+
+**PaaS alternatives** (connect the repo): Railway, Render, or Fly.io — deploy the Dockerfile and attach a Postgres with **pgvector** enabled, then set the env vars above. Vercel is a poor fit: AI grading calls exceed serverless timeouts and you'd need an external pgvector database.
