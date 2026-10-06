@@ -1,17 +1,17 @@
 flowchart TB
-  A["Student submits<br/>PDF / DOCX file"] --> B["extractFileText<br/>unpdf / mammoth"]
-  B --> C["submissions.extracted_text<br/>+ extraction_ok flag"]
-  C --> D["Chunk document<br/>document_chunks rows"]
-  D --> E["Embeddings API<br/>/embeddings"]
-  E --> F[("pgvector:<br/>stored embeddings")]
-  F --> G["On grading: top-k retrieval<br/>EMBEDDING_TOP_K chunks"]
-  R["Rubric criteria + weights<br/>+ prompt_notes (from dosen)"] --> G
+  A["Mahasiswa mengumpulkan<br/>berkas PDF / DOCX"] --> B["extractFileText<br/>unpdf / mammoth"]
+  B --> C["submissions.extracted_text<br/>+ flag extraction_ok"]
+  C --> D["Pecah dokumen (chunk)<br/>baris document_chunks"]
+  D --> E["API Embeddings<br/>/embeddings"]
+  E --> F[("pgvector:<br/>vektor tersimpan")]
+  F --> G["Saat penilaian: retrieval top-k<br/>EMBEDDING_TOP_K chunk"]
+  R["Kriteria rubrik + bobot<br/>+ prompt_notes (dari dosen)"] --> G
   C --> G
-  G --> H["Build grading prompt"]
-  H --> I["LLM API<br/>/chat/completions"]
+  G --> H["Susun prompt penilaian"]
+  H --> I["API LLM<br/>/chat/completions"]
   I --> J["grades: nilai, predikat,<br/>feedback - source = model"]
   J --> K{"release_mode"}
-  K -->|"langsung"| L["Auto-publish"]
-  K -->|"review"| M["Dosen reviews draft<br/>then clicks Terbitkan"]
-  L --> N["Mahasiswa sees<br/>nilai + feedback"]
+  K -->|"langsung"| L["Publikasi otomatis"]
+  K -->|"review"| M["Dosen meninjau draft<br/>lalu klik Terbitkan"]
+  L --> N["Mahasiswa melihat<br/>nilai + feedback"]
   M --> N

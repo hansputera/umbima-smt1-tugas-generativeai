@@ -1,20 +1,20 @@
 flowchart TD
   subgraph MAH["Mahasiswa"]
-    C1["Open assignment:<br/>quiz navigator / text / file upload"] --> C2["Submit - attempt locked<br/>UNIQUE per student"]
+    C1["Buka tugas:<br/>navigator kuis / teks / unggah berkas"] --> C2["Submit - attempt terkunci<br/>UNIQUE per mahasiswa"]
   end
-  subgraph GR["Grading"]
-    D1{"Grade source"}
+  subgraph GR["Penilaian"]
+    D1{"Sumber nilai"}
     D2["PG: auto code-grading<br/>vs answer_key"]
-    D3["PDF/DOCX: AI RAG<br/>pipeline (figure 2)"]
-    D4["Manual rubric scoring<br/>per criterion + feedback"]
+    D3["PDF/DOCX: pipeline AI RAG<br/>(gambar 2)"]
+    D4["Skoring rubrik manual<br/>per kriteria + feedback"]
     D5["grades.state = draft"]
     D6{"release_mode"}
-    D7["review: dosen clicks<br/>Terbitkan (publish)"]
-    D8["langsung: auto-publish<br/>on submit"]
+    D7["review: dosen klik<br/>Terbitkan (publish)"]
+    D8["langsung: publikasi otomatis<br/>saat submit"]
   end
-  subgraph RES["Result"]
-    E1["Mahasiswa sees nilai,<br/>predikat A-D, feedback"]
-    E2["Revisions tracked:<br/>grade_revisions snapshot"]
+  subgraph RES["Hasil"]
+    E1["Mahasiswa melihat nilai,<br/>predikat A-D, feedback"]
+    E2["Revisi tercatat:<br/>snapshot grade_revisions"]
   end
   C2 --> D1
   D1 --> D2

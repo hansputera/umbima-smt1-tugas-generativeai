@@ -1,12 +1,12 @@
 flowchart TD
   subgraph ADM["Admin"]
-    A1["Create Periode<br/>(e.g. 2025/2026 Ganjil)"] --> A2["Create Kelas (section)<br/>+ assign dosen"]
-    A2 --> A3["Place mahasiswa into class"]
+    A1["Buat Periode<br/>(mis. 2025/2026 Ganjil)"] --> A2["Buat Kelas (seksi)<br/>+ tetapkan dosen"]
+    A2 --> A3["Tempatkan mahasiswa ke kelas"]
   end
   subgraph DOS["Dosen"]
-    B1["Create Pertemuan (topic)"] --> B2["Create assignment:<br/>PG / Essay / PDF / DOCX"]
-    B2 --> B3["Add PG questions + answer key<br/>or rubric (weights = 100)"]
-    B3 --> B4["Set due date + release mode<br/>(review / langsung)"]
+    B1["Buat Pertemuan (topic)"] --> B2["Buat tugas:<br/>PG / Essay / PDF / DOCX"]
+    B2 --> B3["Tambah soal PG + answer key<br/>atau rubrik (bobot = 100)"]
+    B3 --> B4["Atur tenggat + release mode<br/>(review / langsung)"]
   end
   A3 --> B1
-  B4 --> C["Ready for mahasiswa<br/>to attempt"]
+  B4 --> C["Siap diikuti<br/>mahasiswa"]
