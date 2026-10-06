@@ -167,5 +167,16 @@ CREATE TABLE IF NOT EXISTS model_settings (
   updated_at timestamptz,
   updated_by uuid REFERENCES users(id)
 );
+
+CREATE TABLE IF NOT EXISTS app_settings (
+  id int PRIMARY KEY CHECK (id = 1),
+  app_name text NOT NULL DEFAULT 'MiniCourse',
+  footer_text text NOT NULL DEFAULT '',
+  logo bytea,
+  logo_type text,
+  logo_version int NOT NULL DEFAULT 0,
+  updated_at timestamptz,
+  updated_by uuid REFERENCES users(id)
+);
 `;
 }

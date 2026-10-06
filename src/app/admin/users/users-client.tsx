@@ -1,8 +1,16 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { Pencil, Plus } from "lucide-react";
-import { saveUser, toggleUserStatus, type UserFormState } from "./actions";
+import { Download, Pencil, Plus, Upload } from "lucide-react";
+import {
+  confirmUsersImport,
+  previewUsersImport,
+  saveUser,
+  toggleUserStatus,
+  type ConfirmState,
+  type PreviewState,
+  type UserFormState,
+} from "./actions";
 import { Button, buttonClass } from "@/components/ui/button";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
 import { Field, Input, Select } from "@/components/ui/field";
@@ -14,6 +22,7 @@ import {
 } from "@/components/ui/misc";
 import { Table, Td, Th, Tr } from "@/components/ui/table";
 import { ROLE_LABEL, statusOf } from "@/lib/status";
+import type { ImportRow, ImportSummary } from "@/lib/users-import";
 
 export type UserRow = {
   id: string;
@@ -23,6 +32,51 @@ export type UserRow = {
   status: string;
 };
 
+function PreviewTable({ rows }: { rows: ImportRow[] }) {
+  const shown = rows.slice(0, 100);
+  return (
+    <div className="overflow-x-auto rounded-lg border border-border bg-white">
+      <Table>
+        <thead>
+          <tr>
+            <Th>Baris</Th>
+            <Th>Nama</Th>
+            <Th>Email</Th>
+            <Th>Peran</Th>
+            <Th>Status baris</Th>
+          </tr>
+        </thead>
+        <tbody>
+          {shown.map((r) => (
+            <Tr key={`${r.line}-${r.email}`}>
+              <Td>{r.line}</Td>
+              <Td className="font-medium">{r.name || "—"}</Td>
+              <Td className="text-muted">{r.email || "—"}</Td>
+              <Td>{(ROLE_LABEL[r.role] ?? r.role) || "—"}</Td>
+              <Td>
+                {r.error ? (
+                  <span className="text-[13px] text-danger">{r.error}</span>
+                ) : r.skip ? (
+                  <span className="text-[13px] text-muted">{r.skip}</span>
+                ) : (
+                  <span className="text-[13px] font-medium text-ok">
+                    Siap diimpor
+                  </span>
+                )}
+              </Td>
+            </Tr>
+          ))}
+        </tbody>
+      </Table>
+      {rows.length > shown.length ? (
+        <p className="px-4 py-2 text-[13px] text-muted">
+          Menampilkan 100 dari {rows.length} baris.
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
 export function UsersClient({ users }: { users: UserRow[] }) {
   const [creating, setCreating] = useState(false);
   const [editing, setEditing] = useState<UserRow | null>(null);
@@ -31,6 +85,18 @@ export function UsersClient({ users }: { users: UserRow[] }) {
     undefined,
   );
   const [rowError, setRowError] = useState<string | null>(null);
+
+  const [importOpen, setImportOpen] = useState(false);
+  const [panelHiddenAt, setPanelHiddenAt] = useState(0);
+  const [dismissedAt, setDismissedAt] = useState(0);
+  const [previewState, previewAction, previewPending] = useActionState<
+    PreviewState,
+    FormData
+  >(previewUsersImport, undefined);
+  const [confirmState, confirmAction, confirmPending] = useActionState<
+    ConfirmState,
+    FormData
+  >(confirmUsersImport, undefined);
 
   const open = creating || editing !== null;
 
@@ -56,6 +122,22 @@ export function UsersClient({ users }: { users: UserRow[] }) {
     return "";
   };
 
+  const preview = previewState?.preview;
+  const result = confirmState?.result;
+  const resultActive =
+    !!result && result.at > dismissedAt && (!preview || result.at > preview.at);
+  const panelOpen =
+    (importOpen || !!preview) && (!preview || preview.at > panelHiddenAt);
+  const previewActive = panelOpen && !!preview && !resultActive;
+  const summary: ImportSummary | null = preview
+    ? {
+        total: preview.total,
+        importable: preview.importable,
+        skipped: preview.skipped,
+        errors: preview.errors,
+      }
+    : null;
+
   return (
     <div className="flex flex-col gap-6">
       <Breadcrumb items={[{ label: "Pengguna" }]} />
@@ -64,15 +146,153 @@ export function UsersClient({ users }: { users: UserRow[] }) {
         description="Akun admin, dosen, dan mahasiswa."
         action={
           !open ? (
-            <Button variant="primary" onClick={() => setCreating(true)}>
-              <Plus size={16} strokeWidth={1.5} aria-hidden />
-              Tambah pengguna
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                onClick={() => {
+                  if (importOpen && preview) setPanelHiddenAt(preview.at);
+                  setImportOpen((v) => !v);
+                  setRowError(null);
+                }}
+              >
+                <Upload size={16} strokeWidth={1.5} aria-hidden />
+                Impor Excel
+              </Button>
+              <Button variant="primary" onClick={() => setCreating(true)}>
+                <Plus size={16} strokeWidth={1.5} aria-hidden />
+                Tambah pengguna
+              </Button>
+            </div>
           ) : undefined
         }
       />
 
       {rowError ? <ErrorLine>{rowError}</ErrorLine> : null}
+
+      {resultActive && result ? (
+        <Card className="flex flex-col gap-3 p-4">
+          <div className="flex items-start justify-between gap-4">
+            <div className="text-[14px] text-ink">
+              <span className="font-medium">{result.inserted}</span> pengguna
+              ditambahkan, {result.skipped.length} dilewati,{" "}
+              {result.errors.length} baris gagal dari {result.total} baris.
+            </div>
+            <Button onClick={() => setDismissedAt(result.at)}>Tutup</Button>
+          </div>
+          {result.skipped.length > 0 ? (
+            <div className="text-[13px] text-muted">
+              <span className="font-medium text-ink">Dilewati:</span>{" "}
+              {result.skipped
+                .slice(0, 20)
+                .map((s) => `${s.email} (${s.reason})`)
+                .join("; ")}
+              {result.skipped.length > 20
+                ? `; dan ${result.skipped.length - 20} lainnya`
+                : ""}
+            </div>
+          ) : null}
+          {result.errors.length > 0 ? (
+            <div className="text-[13px] text-danger">
+              <span className="font-medium">Gagal:</span>{" "}
+              {result.errors
+                .slice(0, 20)
+                .map((e) => `baris ${e.line}: ${e.message}`)
+                .join("; ")}
+              {result.errors.length > 20
+                ? `; dan ${result.errors.length - 20} lainnya`
+                : ""}
+            </div>
+          ) : null}
+        </Card>
+      ) : null}
+
+      {!open && panelOpen ? (
+        <Card className="flex flex-col gap-4 p-6">
+          <div className="flex items-center justify-between gap-4">
+            <h2>Impor pengguna dari Excel</h2>
+            <a
+              href="/admin/users/template"
+              className={buttonClass()}
+              download
+            >
+              <Download size={16} strokeWidth={1.5} aria-hidden />
+              Unduh template
+            </a>
+          </div>
+          <p className="text-[14px] text-muted">
+            Isi template lalu unggah berkas .xlsx. Maksimal 500 baris dan 2 MB.
+            Semua pengguna baru memakai kata sandi default password123. Email
+            yang sudah terdaftar akan dilewati.
+          </p>
+
+          <form action={previewAction} className="flex flex-col gap-3">
+            <Field
+              label="Berkas Excel (.xlsx)"
+              htmlFor="imp-file"
+              error={previewState?.error}
+            >
+              <input
+                id="imp-file"
+                name="file"
+                type="file"
+                accept=".xlsx"
+                className="w-full cursor-pointer rounded border border-border bg-white px-2 py-1.5 text-[14px] text-ink file:mr-3 file:cursor-pointer file:rounded file:border file:border-border file:bg-canvas file:px-3 file:py-1 file:text-[14px] file:text-ink"
+              />
+            </Field>
+            {previewState?.fileErrors?.length ? (
+              <ErrorLine>{previewState.fileErrors.join(" ")}</ErrorLine>
+            ) : null}
+            <div className="flex gap-2">
+              <Button type="submit" disabled={previewPending}>
+                {previewPending ? "Membaca berkas..." : "Pratinjau"}
+              </Button>
+              <Button
+                onClick={() => {
+                  if (preview) setPanelHiddenAt(preview.at);
+                  setImportOpen(false);
+                }}
+              >
+                Batal
+              </Button>
+            </div>
+          </form>
+
+          {confirmState?.error ? <ErrorLine>{confirmState.error}</ErrorLine> : null}
+
+          {previewActive && preview && summary ? (
+            <div className="flex flex-col gap-3">
+              <p className="text-[14px] text-ink">
+                <span className="font-medium">{summary.total}</span> baris
+                terbaca ·{" "}
+                <span className="font-medium">{summary.importable}</span> siap
+                diimpor · {summary.skipped} dilewati · {summary.errors} gagal
+              </p>
+              <PreviewTable rows={preview.rows} />
+              {preview.importable > 0 ? (
+                <form action={confirmAction} className="flex gap-2">
+                  <input
+                    type="hidden"
+                    name="rows"
+                    value={JSON.stringify(preview.rows)}
+                  />
+                  <Button
+                    type="submit"
+                    variant="primary"
+                    disabled={confirmPending}
+                  >
+                    {confirmPending
+                      ? "Mengimpor..."
+                      : `Konfirmasi impor (${preview.importable})`}
+                  </Button>
+                </form>
+              ) : (
+                <p className="text-[14px] text-muted">
+                  Tidak ada baris yang siap diimpor.
+                </p>
+              )}
+            </div>
+          ) : null}
+        </Card>
+      ) : null}
 
       {open ? (
         <Card className="p-6">

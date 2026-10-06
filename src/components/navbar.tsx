@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Bell, ChevronDown, LogOut } from "lucide-react";
 import { logout } from "@/lib/actions/auth";
@@ -22,11 +23,15 @@ export function Navbar({
   homeHref,
   userName,
   roleLabel,
+  appName,
+  logoSrc,
 }: {
   items: NavItem[];
   homeHref: string;
   userName: string;
   roleLabel: string;
+  appName: string;
+  logoSrc: string | null;
 }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
@@ -47,14 +52,26 @@ export function Navbar({
     <header className="sticky top-0 z-40 border-b border-border bg-white">
       <div className="flex min-h-[60px] flex-wrap items-center gap-x-5 gap-y-0 px-6">
         <Link href={homeHref} className="flex shrink-0 items-center gap-2 py-3">
-          <span
-            className="grid size-7 place-items-center rounded-[4px] bg-accent text-[14px] font-bold text-white"
-            aria-hidden
-          >
-            N
-          </span>
+          {logoSrc ? (
+            <Image
+              src={logoSrc}
+              alt=""
+              width={28}
+              height={28}
+              unoptimized
+              aria-hidden
+              className="size-7 rounded-[4px] object-contain"
+            />
+          ) : (
+            <span
+              className="grid size-7 place-items-center rounded-[4px] bg-accent text-[14px] font-bold text-white"
+              aria-hidden
+            >
+              {appName.charAt(0).toUpperCase()}
+            </span>
+          )}
           <span className="text-[17px] leading-none font-semibold text-ink">
-            Nilai
+            {appName}
           </span>
         </Link>
 

@@ -5,6 +5,10 @@ export default function proxy(request: NextRequest) {
   const session = verifyToken(request.cookies.get(SESSION_COOKIE)?.value);
   const { pathname } = request.nextUrl;
 
+  if (pathname === "/logo") {
+    return NextResponse.next();
+  }
+
   if (pathname === "/login") {
     if (session) {
       return NextResponse.redirect(new URL(roleHome(session.role), request.url));

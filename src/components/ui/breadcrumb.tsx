@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
+import { useBranding } from "@/components/branding-context";
 
 export type Crumb = { label: string; href?: string };
 
@@ -10,8 +13,9 @@ export function Breadcrumb({
   items: Crumb[];
   rootHref?: string;
 }) {
+  const { appName } = useBranding();
   const all: Crumb[] = rootHref
-    ? [{ label: "Nilai", href: rootHref }, ...items]
+    ? [{ label: appName, href: rootHref }, ...items]
     : items;
   return (
     <nav

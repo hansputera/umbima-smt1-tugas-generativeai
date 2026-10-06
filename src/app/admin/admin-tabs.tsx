@@ -9,6 +9,7 @@ const TABS: { href: string; label: string; exact?: boolean }[] = [
   { href: "/admin/courses", label: "Mata kuliah" },
   { href: "/admin/periods", label: "Periode" },
   { href: "/admin/placement", label: "Penempatan" },
+  { href: "/admin/branding", label: "Aplikasi" },
   { href: "/admin/settings", label: "Setelan model" },
 ];
 

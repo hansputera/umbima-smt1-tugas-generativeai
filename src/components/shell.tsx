@@ -1,7 +1,9 @@
 import type { ReactNode } from "react";
 import { Navbar, type NavItem } from "@/components/navbar";
+import { BrandingProvider } from "@/components/branding-context";
+import { footerOf, getAppBranding, logoSrc } from "@/lib/branding";
 
-export function AppShell({
+export async function AppShell({
   items,
   homeHref,
   userName,
@@ -14,6 +16,7 @@ export function AppShell({
   roleLabel: string;
   children: ReactNode;
 }) {
+  const branding = await getAppBranding();
   return (
     <div className="flex min-h-screen flex-col bg-canvas">
       <Navbar
@@ -21,10 +24,14 @@ export function AppShell({
         homeHref={homeHref}
         userName={userName}
         roleLabel={roleLabel}
+        appName={branding.app_name}
+        logoSrc={logoSrc(branding)}
       />
-      <main className="flex-1 px-6 py-6">{children}</main>
+      <BrandingProvider appName={branding.app_name}>
+        <main className="flex-1 px-6 py-6">{children}</main>
+      </BrandingProvider>
       <footer className="flex items-center justify-between border-t border-border bg-white px-6 py-3 text-[13px] text-muted">
-        <span>Nilai</span>
+        <span>{footerOf(branding)}</span>
         <span>{roleLabel}</span>
       </footer>
     </div>
