@@ -1,0 +1,31 @@
+flowchart TD
+  subgraph MAH["Mahasiswa"]
+    C1["Open assignment:<br/>quiz navigator / text / file upload"] --> C2["Submit - attempt locked<br/>UNIQUE per student"]
+  end
+  subgraph GR["Grading"]
+    D1{"Grade source"}
+    D2["PG: auto code-grading<br/>vs answer_key"]
+    D3["PDF/DOCX: AI RAG<br/>pipeline (figure 2)"]
+    D4["Manual rubric scoring<br/>per criterion + feedback"]
+    D5["grades.state = draft"]
+    D6{"release_mode"}
+    D7["review: dosen clicks<br/>Terbitkan (publish)"]
+    D8["langsung: auto-publish<br/>on submit"]
+  end
+  subgraph RES["Result"]
+    E1["Mahasiswa sees nilai,<br/>predikat A-D, feedback"]
+    E2["Revisions tracked:<br/>grade_revisions snapshot"]
+  end
+  C2 --> D1
+  D1 --> D2
+  D1 --> D3
+  D1 --> D4
+  D2 --> D5
+  D3 --> D5
+  D4 --> D5
+  D5 --> D6
+  D6 -->|"review"| D7
+  D6 -->|"langsung"| D8
+  D7 --> E1
+  D8 --> E1
+  E1 --> E2

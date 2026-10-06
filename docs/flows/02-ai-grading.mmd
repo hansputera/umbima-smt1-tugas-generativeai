@@ -1,0 +1,17 @@
+flowchart TB
+  A["Student submits<br/>PDF / DOCX file"] --> B["extractFileText<br/>unpdf / mammoth"]
+  B --> C["submissions.extracted_text<br/>+ extraction_ok flag"]
+  C --> D["Chunk document<br/>document_chunks rows"]
+  D --> E["Embeddings API<br/>/embeddings"]
+  E --> F[("pgvector:<br/>stored embeddings")]
+  F --> G["On grading: top-k retrieval<br/>EMBEDDING_TOP_K chunks"]
+  R["Rubric criteria + weights<br/>+ prompt_notes (from dosen)"] --> G
+  C --> G
+  G --> H["Build grading prompt"]
+  H --> I["LLM API<br/>/chat/completions"]
+  I --> J["grades: nilai, predikat,<br/>feedback - source = model"]
+  J --> K{"release_mode"}
+  K -->|"langsung"| L["Auto-publish"]
+  K -->|"review"| M["Dosen reviews draft<br/>then clicks Terbitkan"]
+  L --> N["Mahasiswa sees<br/>nilai + feedback"]
+  M --> N

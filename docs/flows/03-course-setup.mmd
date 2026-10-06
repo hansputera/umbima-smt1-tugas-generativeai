@@ -1,0 +1,12 @@
+flowchart TD
+  subgraph ADM["Admin"]
+    A1["Create Periode<br/>(e.g. 2025/2026 Ganjil)"] --> A2["Create Kelas (section)<br/>+ assign dosen"]
+    A2 --> A3["Place mahasiswa into class"]
+  end
+  subgraph DOS["Dosen"]
+    B1["Create Pertemuan (topic)"] --> B2["Create assignment:<br/>PG / Essay / PDF / DOCX"]
+    B2 --> B3["Add PG questions + answer key<br/>or rubric (weights = 100)"]
+    B3 --> B4["Set due date + release mode<br/>(review / langsung)"]
+  end
+  A3 --> B1
+  B4 --> C["Ready for mahasiswa<br/>to attempt"]

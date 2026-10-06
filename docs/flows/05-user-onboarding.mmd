@@ -1,0 +1,17 @@
+flowchart TD
+  S["Admin: Pengguna page"] --> CHOICE{"Onboard new user"}
+  CHOICE --> MANUAL["Manual: form Tambah pengguna<br/>nama, email, peran, status"]
+  CHOICE --> EXCEL["Excel: upload .xlsx<br/>max 500 rows / 2 MB<br/>(template download available)"]
+  EXCEL --> PARSE["Parse workbook<br/>header: Nama, Email, Peran, Status"]
+  PARSE --> VALID["Validate + normalize<br/>role: dosen/mahasiswa aliases<br/>status: aktif/nonaktif<br/>email format check"]
+  VALID --> PREVIEW{"Preview (server)"}
+  PREVIEW --> READY["Siap diimpor"]
+  PREVIEW --> SKIP1["Email sudah terdaftar<br/>+ in-file duplicates"]
+  PREVIEW --> SKIP2["Baris invalid<br/>(nama/email error)"]
+  READY --> CONFIRM["Confirm import<br/>INSERT ... ON CONFLICT DO NOTHING"]
+  MANUAL --> SAVE["Save user<br/>hash default password<br/>password123"]
+  SKIP1 -.->|"skipped, never overwritten"| DONE
+  SKIP2 -.-> DONE
+  CONFIRM --> DONE["Users table refreshed"]
+  SAVE --> DONE
+  DONE --> PLACE["Placement:<br/>enroll into class"]

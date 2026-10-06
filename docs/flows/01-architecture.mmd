@@ -1,0 +1,26 @@
+flowchart TB
+  subgraph Browser["Browser"]
+    UI["Next.js UI<br/>server components + client forms"]
+  end
+  subgraph App["Next.js 16 app (Node.js, Docker)"]
+    Proxy["proxy.ts<br/>session cookie check / redirect to /login"]
+    Actions["Server actions<br/>requireRole: admin / dosen / mahasiswa"]
+    Pages["App Router pages<br/>/admin /lecturer /student"]
+    Logo["GET /logo<br/>branding image"]
+  end
+  subgraph DB["PostgreSQL 17 + pgvector"]
+    PG[("nilai database<br/>users - periods - courses - topics<br/>assignments - submissions - grades<br/>document_chunks (vector) - app_settings")]
+  end
+  subgraph AI["External AI APIs (OpenAI-compatible)"]
+    LLM["/chat/completions<br/>grading model"]
+    EMB["/embeddings<br/>text embedding model"]
+  end
+  UI -->|"navigation + form posts"| Proxy
+  Proxy --> Pages
+  UI -->|"server actions (fetch / MPA)"| Actions
+  Actions --> PG
+  Pages --> PG
+  Logo --> PG
+  Actions -.->|"AI grading"| LLM
+  Actions -.->|"embed chunks"| EMB
+  EMB -.->|"vectors stored"| PG
