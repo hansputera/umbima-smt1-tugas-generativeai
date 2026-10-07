@@ -49,7 +49,46 @@ docker compose up -d --build  # app on http://localhost:3000
 
 Seeds and schema migrations run automatically on first boot.
 
+## Standalone install (without Docker)
+
+Prerequisites: **Python 3.12** and a reachable **PostgreSQL 17 with the `pgvector` extension available**. The first migration runs `CREATE EXTENSION IF NOT EXISTS vector`, so the connecting role needs permission to create it — either use a superuser role or pre-create the extension once (`CREATE EXTENSION vector;`).
+
+```bash
+git clone <repo> && cd <repo>
+
+# 1. Virtualenv + dependencies
+python3.12 -m venv .venv
+.venv/bin/python -m pip install -r requirements.txt
+
+# 2. Database (create once; the `vector` extension is added by migrations)
+createdb nilai
+
+# 3. Configuration
+cp .env.example .env.local   # then set DATABASE_URL, SESSION_SECRET, LLM_*/EMB_*
+
+# 4. Schema + seed data (the same steps Docker runs on boot)
+.venv/bin/python manage.py migrate
+.venv/bin/python manage.py seed
+
+# 5. Run the dev server
+.venv/bin/python manage.py runserver 127.0.0.1:3001   # http://localhost:3001
+```
+
+Set `DATABASE_URL` to your local database (adjust the user/password to your role), e.g. `postgresql://nilai:nilai@localhost:5432/nilai`. `runserver` serves static assets in development; for a production-style run without Docker, collect static files and use Gunicorn behind a reverse proxy:
+
+```bash
+.venv/bin/python manage.py collectstatic --noinput
+.venv/bin/gunicorn nilai.wsgi:application --bind 0.0.0.0:3000 --workers 2 --timeout 120
+```
+
+**Grading CLI (no Docker, no PostgreSQL).** The simulation tool in `tools/grade_cli.py` reuses the same `.venv` but needs neither Docker nor a database — it only reads the LLM settings from `.env.local`:
+
+```bash
+.venv/bin/python tools/grade_cli.py
+```
+
 ## Configuration (`.env.local`)
+
 
 | Variable | Purpose |
 |---|---|
