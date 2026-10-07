@@ -1,5 +1,5 @@
 flowchart TB
-  A["Mahasiswa mengumpulkan<br/>berkas PDF / DOCX"] --> B["extractFileText<br/>unpdf / mammoth"]
+  A["Mahasiswa mengumpulkan<br/>berkas PDF / DOCX"] --> B["Ekstraksi teks<br/>pypdf / python-docx"]
   B --> C["submissions.extracted_text<br/>+ flag extraction_ok"]
   C --> D["Pecah dokumen (chunk)<br/>baris document_chunks"]
   D --> E["API Embeddings<br/>/embeddings"]

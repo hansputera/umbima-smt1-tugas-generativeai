@@ -21,11 +21,11 @@ A web platform for running courses, assignments, submissions, and grading end-to
 - Submissions (text, file upload), grades with predikat (A–D) and feedback
 
 **AI grading**
-- DOCX/PDF extraction (mammoth/unpdf) → chunked → embedded into `pgvector` → top-k retrieval feeds an OpenAI-compatible `/chat/completions` call; grading source is recorded per grade (`code` | `model` | manual)
+- DOCX/PDF extraction (`python-docx` / `pypdf`) → chunked → embedded into `pgvector` → top-k retrieval feeds an OpenAI-compatible `/chat/completions` call; grading source is recorded per grade (`code` | `model` | manual)
 
 ## Tech stack
 
-Next.js 16 (App Router, server actions, `proxy.ts`), React 19, Tailwind CSS 4, PostgreSQL 17 + pgvector, ExcelJS, Docker Compose.
+Python 3.12 + Django 5.2 (server-rendered templates) with HTMX (`django-htmx`) for partial actions, PostgreSQL 17 + pgvector, openpyxl, Gunicorn + WhiteNoise, Docker Compose.
 
 ## Quickstart (local)
 
@@ -54,14 +54,31 @@ Seeds and schema migrations run automatically on first boot.
 | Variable | Purpose |
 |---|---|
 | `SESSION_SECRET` | Cookie signing secret — **must** be a long random string |
-| `DATABASE_URL` | Overridden by compose; only needed for `npm run dev` outside Docker |
+| `DATABASE_URL` | Overridden by compose; only needed when running Django outside Docker |
 | `EMBEDDING_DIM` | Vector size, must match the embedding model (default 1536) |
 | `EMBEDDING_TOP_K` | RAG chunks retrieved per grading prompt (default 6) |
 | `LLM_*` / `EMB_*` | Chat + embeddings base URL, model, API key (seeded to `/admin/settings` on first boot; runtime edits there win until the DB volume is reset) |
 
+## Tests
+
+HTTP-level suites run against a live dev server (`http://localhost:3001`, e.g. `docker compose --profile dev up -d` or `.venv/bin/python manage.py runserver 0.0.0.1:3001`). Django test-client suites need no server. Run each suite from the repo root with `.venv/bin/python`; suites mutate the database and restore seed state on exit.
+
+```bash
+# live-server suites (tests/http/)
+.venv/bin/python tests/http/spot.py              # page smoke checks per role (30)
+.venv/bin/python tests/http/login_test.py        # login/session (9)
+.venv/bin/python tests/http/walkthrough_admin.py # Playwright admin walkthrough, needs Chrome (38)
+.venv/bin/python tests/http/test_actions.py      # full e2e: grading, branding, import (70)
+
+# Django test-client suites (tests/test_*.py, 1275 checks total)
+for f in tests/test_*.py; do .venv/bin/python "$f"; done
+```
+
+Full regression baseline: **1422 checks, 0 failures**.
+
 ## Deployment
 
-The app is containerized — any Docker host works. Recommended: **a small VPS** (needs ≥ 2 GB RAM for the Next build).
+The app is containerized — any Docker host works. Recommended: **a small VPS** (needs ≥ 1 GB RAM).
 
 ```bash
 git clone <repo> && cd <repo>
@@ -77,4 +94,4 @@ Production checklist:
 - Back up the `pgdata` volume regularly (`pg_dump`)
 - The `dev` profile is for local development only — don't run it in production
 
-**PaaS alternatives** (connect the repo): Railway, Render, or Fly.io — deploy the Dockerfile and attach a Postgres with **pgvector** enabled, then set the env vars above. Vercel is a poor fit: AI grading calls exceed serverless timeouts and you'd need an external pgvector database.
+**PaaS alternatives** (connect the repo): Railway, Render, or Fly.io — deploy the Dockerfile and attach a Postgres with **pgvector** enabled, then set the env vars above. Generic serverless platforms are a poor fit: AI grading calls exceed serverless timeouts and you'd need an external pgvector database.

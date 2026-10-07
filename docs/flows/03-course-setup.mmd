@@ -4,9 +4,9 @@ flowchart TD
     A2 --> A3["Tempatkan mahasiswa ke kelas"]
   end
   subgraph DOS["Dosen"]
-    B1["Buat Pertemuan (topic)"] --> B2["Buat tugas:<br/>PG / Essay / PDF / DOCX"]
-    B2 --> B3["Tambah soal PG + answer key<br/>atau rubrik (bobot = 100)"]
-    B3 --> B4["Atur tenggat + release mode<br/>(review / langsung)"]
+    B0["Kelola pertemuan (topic)<br/>+ blok materi (teks / tautan / berkas)"] --> B1["Buat tugas:<br/>PG / Essay / PDF / DOCX"]
+    B1 --> B2["Tambah soal PG + answer key<br/>atau rubrik (bobot = 100)"]
+    B2 --> B3["Atur tenggat + release mode<br/>(review / langsung)"]
   end
-  A3 --> B1
-  B4 --> C["Siap diikuti<br/>mahasiswa"]
+  A3 --> B0
+  B3 --> C["Siap diikuti<br/>mahasiswa"]

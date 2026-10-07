@@ -1,26 +1,27 @@
 flowchart TB
   subgraph Browser["Browser"]
-    UI["UI Next.js<br/>server components + form client"]
+    UI["Halaman HTML (server-rendered)<br/>+ HTMX untuk aksi parsial"]
   end
-  subgraph App["App Next.js 16 (Node.js, Docker)"]
-    Proxy["proxy.ts<br/>cek session cookie / redirect ke /login"]
-    Actions["Server actions<br/>requireRole: admin / dosen / mahasiswa"]
-    Pages["Halaman App Router<br/>/admin /lecturer /student"]
-    Logo["GET /logo<br/>gambar branding"]
+  subgraph App["Aplikasi Django (Python 3.12, gunicorn, Docker)"]
+    MW["ProxyMiddleware<br/>cek session cookie + peran<br/>redirect ke /login bila tidak aktif"]
+    Views["Django views per peran<br/>admin / dosen / mahasiswa"]
+    CP["Context processor shell<br/>branding + navigasi peran"]
+    Static["GET /logo + /static<br/>aset (Whitenoise)"]
   end
   subgraph DB["PostgreSQL 17 + pgvector"]
-    PG[("basis data nilai<br/>users - periods - courses - topics<br/>assignments - submissions - grades<br/>document_chunks (vector) - app_settings")]
+    PG[("basis data nilai<br/>users - periods - courses - topics<br/>assignments - submissions - grades<br/>document_chunks (vector) - app_settings - model_settings")]
   end
   subgraph AI["API AI eksternal (OpenAI-compatible)"]
     LLM["/chat/completions<br/>model untuk grading"]
     EMB["/embeddings<br/>model text embedding"]
   end
-  UI -->|"navigasi + form post"| Proxy
-  Proxy --> Pages
-  UI -->|"server actions (fetch / MPA)"| Actions
-  Actions --> PG
-  Pages --> PG
-  Logo --> PG
-  Actions -.->|"AI grading"| LLM
-  Actions -.->|"embed chunk"| EMB
+  UI -->|"navigasi + form post"| MW
+  UI -->|"request HTMX"| MW
+  MW --> Views
+  MW --> Static
+  Views --> CP
+  Views --> PG
+  Static --> PG
+  Views -.->|"penilaian AI"| LLM
+  Views -.->|"embed chunk"| EMB
   EMB -.->|"vektor tersimpan"| PG
