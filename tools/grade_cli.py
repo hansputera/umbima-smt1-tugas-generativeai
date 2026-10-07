@@ -41,6 +41,12 @@ from assessment.validate import parse_model_response  # noqa: E402
 TEMPERATURE = 0.2
 MAX_TOKENS = 1200
 LEVELS = ("level_1", "level_2", "level_3", "level_4")
+LEVEL_LABELS = {
+    "level_1": "Dangkal",
+    "level_2": "Sebagian / tanpa penjelasan",
+    "level_3": "Cukup jelas",
+    "level_4": "Lengkap dan tepat",
+}
 
 
 def premis(title):
@@ -88,6 +94,11 @@ def ask_choice(label, choices, default=None):
         print(f"  ! Pilih salah satu: {opts}.")
 
 
+def ask_level(score, name):
+    raw = input(f"Deskripsi skor {score} - {name} (kosongkan = '{name}'): ").strip()
+    return raw or name
+
+
 def new_state():
     return {
         "assignment": {"title": "", "type": "", "instructions": ""},
@@ -126,10 +137,10 @@ def setup_rubric(state):
                 "id": str(uuid.uuid4()),
                 "name": ask("Nama kriteria"),
                 "weight": ask_int("Bobot (1-100)", 1, 100),
-                "level_1": ask("Deskripsi level 1"),
-                "level_2": ask("Deskripsi level 2"),
-                "level_3": ask("Deskripsi level 3"),
-                "level_4": ask("Deskripsi level 4"),
+                "level_1": ask_level(1, LEVEL_LABELS["level_1"]),
+                "level_2": ask_level(2, LEVEL_LABELS["level_2"]),
+                "level_3": ask_level(3, LEVEL_LABELS["level_3"]),
+                "level_4": ask_level(4, LEVEL_LABELS["level_4"]),
                 "prompt_notes": ask("Catatan penilaian (opsional)", default="-"),
             }
         )
@@ -319,8 +330,8 @@ def grade_manual(state):
     criteria = []
     for c in state["rubric"]:
         print(f"\n{c['name']} (bobot {c['weight']})")
-        for lv in LEVELS:
-            print(f"  {lv[-1]}: {c[lv]}")
+        for score, lv in enumerate(LEVELS, 1):
+            print(f"  {score} - {LEVEL_LABELS[lv]}: {c[lv]}")
         criteria.append(
             {
                 "criterion_id": c["id"],
