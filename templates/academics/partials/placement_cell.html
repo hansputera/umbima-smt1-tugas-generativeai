@@ -1,0 +1,3 @@
+{% include "academics/partials/placement_check.html" %}
+<div id="row-error" hx-swap-oob="true">{% if row_error %}<p class="error-line">{{ row_error }}</p>{% endif %}</div>
+{% if show_count %}<span id="placement-count" class="pick-meta" hx-swap-oob="outerHTML">{{ student.email }} · {{ class_count }} kelas</span>{% endif %}

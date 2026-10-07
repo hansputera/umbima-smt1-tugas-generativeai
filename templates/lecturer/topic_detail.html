@@ -1,0 +1,157 @@
+{% extends "course_base.html" %}
+{% load nilai_tags %}
+
+{% block course_title %}
+<h1 class="course-title">Pertemuan {{ topic.week }}: {{ topic.title }}</h1>
+<p class="course-sub">{{ course.code }} — {{ course.name }}</p>
+{% endblock %}
+
+{% block course_action %}
+<div class="course-action-row">
+  <a class="btn" href="/lecturer/courses/{{ course.id }}">Ke mata kuliah</a>
+  {% if a_open %}
+  <a class="btn" href="?form=0">Batal</a>
+  {% else %}
+  <a class="btn btn-primary" href="?form=new">{% include "icons/plus.html" %}Tambah tugas</a>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block course_content %}
+<form id="topic-form" method="post" action="" class="form-stack-4">
+  {% csrf_token %}
+  <input type="hidden" name="action" value="save_topic">
+  <input type="hidden" name="topic_id" value="{{ topic.id }}">
+  <input type="hidden" name="blocks" id="blocks-json" value="{{ blocks_value }}">
+
+  <div class="card card-pad form-stack-4">
+    <h2>Detail pertemuan</h2>
+    <div class="form-grid">
+      <div class="field">
+        <label class="field-label" for="td-title">Judul</label>
+        <input class="input" id="td-title" name="title" type="text" value="{{ t_values.title }}">
+        {% if t_errors.title %}<p class="error-line">{{ t_errors.title }}</p>{% endif %}
+      </div>
+      <div class="field">
+        <label class="field-label" for="td-week">Minggu</label>
+        <input class="input" id="td-week" name="week" type="number" min="1" max="30" value="{{ t_values.week }}">
+        {% if t_errors.week %}<p class="error-line">{{ t_errors.week }}</p>{% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="card card-pad form-stack-4">
+    <div class="card-head">
+      <h2>Materi</h2>
+      <button class="btn" type="button" data-list-add="materi">{% include "icons/plus.html" %}Tambah materi</button>
+    </div>
+    <p class="empty-plain empty-14" data-list-empty="materi" {% if block_rows %}hidden{% endif %}>Belum ada materi. Tambahkan materi pertama.</p>
+    <div class="list-rows" data-list-rows="materi" {% if not block_rows %}hidden{% endif %}>
+      {% for b in block_rows %}
+      {% include "lecturer/partials/block_row.html" with b=b n=forloop.counter %}
+      {% endfor %}
+    </div>
+    <template data-list-template="materi">
+      {% include "lecturer/partials/block_row.html" with b=None n=0 %}
+    </template>
+    {% if t_error %}<p class="error-line">{{ t_error }}</p>{% endif %}
+    {% if info %}{% include "components/notice.html" with text=info cls="st-ok" %}{% endif %}
+    <div class="form-actions">
+      <button class="btn btn-primary" type="submit">Simpan pertemuan</button>
+      <p class="hint-line">Tautan materi tersimpan, berkas hanya namanya.</p>
+    </div>
+  </div>
+</form>
+
+<section class="section">
+  <div class="section-head"><h2>Tugas</h2></div>
+
+  {% if a_open %}
+  <div class="card card-pad">
+    <h3>Tugas baru</h3>
+    <form id="assign-form" method="post" action="" class="form-stack-4">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="create_assignment">
+      <input type="hidden" name="topic_id" value="{{ topic.id }}">
+      <input type="hidden" name="questions" id="questions-json" value="{{ a_questions_json }}">
+      <div class="form-grid">
+        <div class="field">
+          <label class="field-label" for="a-title">Judul</label>
+          <input class="input" id="a-title" name="title" type="text" placeholder="Esai: bentuk normalisasi" value="{{ a_values.title }}">
+          {% if a_errors.title %}<p class="error-line">{{ a_errors.title }}</p>{% endif %}
+        </div>
+        <div class="field">
+          <label class="field-label" for="a-type">Tipe</label>
+          <select class="select" id="a-type" name="type" data-assign-type>
+            <option value="essay" {% if a_values.type == "essay" %}selected{% endif %}>Esai</option>
+            <option value="pg" {% if a_values.type == "pg" %}selected{% endif %}>Pilihan ganda</option>
+            <option value="pdf" {% if a_values.type == "pdf" %}selected{% endif %}>Unggah PDF</option>
+            <option value="docx" {% if a_values.type == "docx" %}selected{% endif %}>Unggah DOCX</option>
+          </select>
+          {% if a_errors.type %}<p class="error-line">{{ a_errors.type }}</p>{% endif %}
+        </div>
+      </div>
+
+      <div data-assign-for="nonpg" {% if a_values.type == "pg" %}hidden{% endif %}>
+        <div class="field">
+          <label class="field-label" for="a-question">Pertanyaan</label>
+          <textarea class="textarea" id="a-question" name="question" rows="3">{{ a_values.question }}</textarea>
+          {% if a_errors.question %}<p class="error-line">{{ a_errors.question }}</p>{% endif %}
+        </div>
+      </div>
+
+      <div data-assign-for="pg" {% if a_values.type != "pg" %}hidden{% endif %}>
+        <div class="pg-builder" data-list="pg">
+          <div class="pg-builder-head">
+            <span class="label">Daftar soal</span>
+            <button class="link-btn" type="button" data-list-add="pg">+ Tambah soal</button>
+          </div>
+          {% if a_errors.question %}<p class="error-line">{{ a_errors.question }}</p>{% endif %}
+          {% if a_errors.options %}<p class="error-line">{{ a_errors.options }}</p>{% endif %}
+          <div class="list-rows form-stack-3" data-list-rows="pg">
+            {% for q in a_questions %}
+            {% include "lecturer/partials/question_row.html" with q=q opts=q.opts answer=q.answer_key n=forloop.counter %}
+            {% endfor %}
+          </div>
+          <template data-list-template="pg">
+            {% include "lecturer/partials/question_row.html" with q=None opts=default_opts answer="A" n=0 %}
+          </template>
+          <p class="hint-line">Kunci hanya terlihat dosen.</p>
+        </div>
+      </div>
+
+      {% if a_error %}<p class="error-line">{{ a_error }}</p>{% endif %}
+      <div class="form-actions">
+        <button class="btn btn-primary" type="submit">Buat tugas</button>
+        <a class="btn" href="?form=0">Batal</a>
+      </div>
+    </form>
+  </div>
+  {% endif %}
+
+  <div class="table-wrap card-table">
+    <table class="table">
+      <thead>
+        <tr>
+          <th class="th">Judul</th>
+          <th class="th">Tipe</th>
+          <th class="th">Mode rilis</th>
+          <th class="th">Pengumpulan</th>
+          <th class="th th-right">Aksi</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for a in assignments %}
+        <tr class="tr">
+          <td class="td fw500">{{ a.title }}</td>
+          <td class="td">{{ a.type|type_label }}</td>
+          <td class="td">{{ a.release_mode|mode_label }}</td>
+          <td class="td">{{ a.submission_count }}</td>
+          <td class="td"><div class="td-actions"><a class="btn btn-sm" href="/lecturer/assignments/{{ a.id }}">Buka</a></div></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

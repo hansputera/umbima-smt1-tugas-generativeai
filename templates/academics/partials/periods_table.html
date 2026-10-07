@@ -1,0 +1,42 @@
+{% load nilai_tags %}
+<div id="periods-table" class="table-wrap">
+  <table class="table">
+    <thead>
+      <tr>
+        <th class="th">Nama</th>
+        <th class="th">Status</th>
+        <th class="th">Jumlah kelas</th>
+        <th class="th th-right">Aksi</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for p in periods %}
+      <tr class="tr">
+        <td class="td"><span class="fw500">{{ p.name }}</span></td>
+        <td class="td">{% if p.is_active %}{% status_dot "active" %}{% else %}{% status_dot "inactive" %}{% endif %}</td>
+        <td class="td">{{ p.class_count }}</td>
+        <td class="td td-actions">
+          <span class="row-actions">
+            <a class="btn btn-sm" href="?form={{ p.id }}">{% include "icons/pencil.html" %}Ubah</a>
+            {% if not p.is_active %}
+            <form method="post" action="/admin/periods" hx-post="/admin/periods" hx-target="#periods-table" hx-swap="outerHTML">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="activate">
+              <input type="hidden" name="id" value="{{ p.id }}">
+              <button class="btn btn-sm" type="submit">Jadikan aktif</button>
+            </form>
+            {% endif %}
+            <form method="post" action="/admin/periods" hx-post="/admin/periods" hx-target="#periods-table" hx-swap="outerHTML">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="delete">
+              <input type="hidden" name="id" value="{{ p.id }}">
+              <button class="btn btn-sm" type="submit">Hapus</button>
+            </form>
+          </span>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% if oob %}<div id="row-error" hx-swap-oob="true">{% if row_error %}<p class="error-line">{{ row_error }}</p>{% endif %}</div>{% endif %}

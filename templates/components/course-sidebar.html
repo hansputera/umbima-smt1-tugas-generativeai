@@ -1,0 +1,20 @@
+{% load nilai_tags %}
+<aside class="course-index" id="course-index">
+  <div class="course-index-head">
+    <span class="label">Indeks kursus</span>
+    <button class="icon-btn" type="button" data-index-toggle="hide" aria-label="Sembunyikan indeks kursus" title="Sembunyikan indeks kursus">{% include "icons/panel-left-close.html" %}</button>
+  </div>
+  <nav class="course-index-nav">
+    <a class="course-index-course" href="/{{ role }}/courses/{{ course.id }}">{{ course.code }} — {{ course.name }}</a>
+    {% for topic in frame.topics %}
+    <div>
+      <a class="course-index-topic{% if topic.id|stringformat:'s' == active_topic_id %} is-active{% endif %}" href="{{ topic.href }}" title="Pertemuan {{ topic.week }}: {{ topic.title }}">Pertemuan {{ topic.week }}: {{ topic.title }}</a>
+      {% for item in topic.items %}
+      <a class="course-index-item" href="{{ item.href }}">{% activity_icon item.type 18 %}<span>{{ item.title }}</span></a>
+      {% endfor %}
+    </div>
+    {% empty %}
+    <p class="course-index-empty">Belum ada pertemuan.</p>
+    {% endfor %}
+  </nav>
+</aside>

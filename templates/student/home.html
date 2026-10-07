@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% load nilai_tags %}
+{% block content %}
+<div class="stack-6">
+  <div class="stack-2">
+    {% breadcrumb %}
+    <div class="page-header">
+      <div class="ph-main">
+        <h1>Beranda</h1>
+        <p class="page-desc">Selamat datang, {{ user.name }}.</p>
+      </div>
+    </div>
+  </div>
+  {% if cards %}
+  <div class="course-grid">
+    {% for c in cards %}
+    <div class="course-card">
+      <div class="course-card-band" aria-hidden="true"></div>
+      <a class="course-card-link" href="/student/courses/{{ c.id }}"><span class="sr-only">{{ c.code }} — {{ c.name }}</span></a>
+      <div class="course-card-body">
+        <div class="course-card-top">
+          <span class="course-card-code">{{ c.code }}</span>
+          {% if c.archived %}{% status_dot "archived" %}{% else %}{% status_dot "aktif" %}{% endif %}
+        </div>
+        <span class="course-card-name">{{ c.name }}</span>
+        <span class="course-card-meta">Semester {{ c.semester }} · {{ c.sks }} SKS{% if c.meta %} · {{ c.meta }}{% endif %}</span>
+        <div class="course-card-foot">
+          <div class="progress">
+            <div class="progress-top"><span class="progress-label">Tugas dinilai</span><span class="progress-value">{{ c.done }}/{{ c.total }}</span></div>
+            <div class="progress-bar"><span style="width: {{ c.progress }}%"></span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-box"><p>Belum ada mata kuliah. Hubungi dosen ya supaya bisa ikut kelas.</p></div>
+  {% endif %}
+
+  <section class="rail-block">
+    <div class="label rail-block-head">Yang akan datang</div>
+    {% if upcoming %}
+    <div class="rail-list">
+      {% for item in upcoming %}
+      <a class="rail-item" href="{{ item.href }}">
+        {% activity_icon item.type 40 %}
+        <span class="rail-item-text">
+          <span class="rail-item-title">{{ item.title }}</span>
+          <span class="rail-item-meta">{{ item.code }} · {{ item.type|type_label }} · Tenggat {{ item.due_at|fmt_date }}</span>
+        </span>
+      </a>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="rail-empty">Tidak ada tenggat mendatang.</p>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

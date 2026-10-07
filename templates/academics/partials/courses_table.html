@@ -1,0 +1,53 @@
+{% load nilai_tags %}
+<div id="courses-table" class="table-wrap">
+  <table class="table">
+    <thead>
+      <tr>
+        <th class="th">Kode</th>
+        <th class="th">Nama</th>
+        <th class="th">Periode</th>
+        <th class="th">Kelas</th>
+        <th class="th">Semester</th>
+        <th class="th">SKS</th>
+        <th class="th">Dosen</th>
+        <th class="th">Mahasiswa</th>
+        <th class="th">Status</th>
+        <th class="th th-right">Aksi</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for c in courses %}
+      <tr class="tr c-row" data-value="{{ c.period_id }}" data-period="{{ c.period_id }}">
+        <td class="td"><span class="fw500">{{ c.code }}</span></td>
+        <td class="td">{{ c.name }}</td>
+        <td class="td">{{ c.period.name }}</td>
+        <td class="td">{{ c.section }}</td>
+        <td class="td">{{ c.semester }}</td>
+        <td class="td">{{ c.sks }}</td>
+        <td class="td td-muted">{{ c.lecturer_names|default:"—" }}</td>
+        <td class="td">{{ c.student_count }}</td>
+        <td class="td">{% if c.archived_at %}{% status_dot "archived" %}{% else %}{% status_dot "aktif" %}{% endif %}</td>
+        <td class="td td-actions">
+          <span class="row-actions">
+            <a class="btn btn-sm" href="/admin/courses/{{ c.id }}">Buka</a>
+            <a class="btn btn-sm" href="?form={{ c.id }}">{% include "icons/pencil.html" %}Ubah</a>
+            <form method="post" action="/admin/courses" hx-post="/admin/courses" hx-target="#courses-table" hx-swap="outerHTML">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="archive">
+              <input type="hidden" name="id" value="{{ c.id }}">
+              <button class="btn btn-sm" type="submit">{% if c.archived_at %}Buka arsip{% else %}Arsipkan{% endif %}</button>
+            </form>
+            <form method="post" action="/admin/courses" hx-post="/admin/courses" hx-target="#courses-table" hx-swap="outerHTML" hx-confirm="Hapus {{ c.code }} {{ c.name }}?">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="delete">
+              <input type="hidden" name="id" value="{{ c.id }}">
+              <button class="btn btn-sm" type="submit">Hapus</button>
+            </form>
+          </span>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% if oob %}<div id="row-error" hx-swap-oob="true">{% if row_error %}<p class="error-line">{{ row_error }}</p>{% endif %}</div>{% endif %}

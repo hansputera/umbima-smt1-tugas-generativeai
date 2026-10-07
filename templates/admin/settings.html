@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% load nilai_tags %}
+{% block content %}
+{% admin_tabs %}
+{% breadcrumb %}
+<div class="page-header">
+  <div class="ph-main">
+    <h1>Setelan model</h1>
+    <p class="page-desc">Berlaku untuk semua panggilan penilaian.</p>
+  </div>
+  <div class="ph-action">
+    <button class="btn btn-primary" type="submit" form="settings-form">Simpan</button>
+  </div>
+</div>
+<div id="row-error">{% flashes %}</div>
+{% if test %}
+{% if test.ok %}{% include "components/notice.html" with text=test.message cls="st-ok" %}{% else %}{% include "components/notice.html" with text=test.message cls="st-danger" %}{% endif %}
+{% endif %}
+<form id="settings-form" method="post" action="" class="form-stack-6">
+  {% csrf_token %}
+  <div class="card card-pad form-stack-4">
+    <div class="card-head">
+      <h2>Penilaian model</h2>
+      {% if model_configured %}{% include "components/notice.html" with text="Grading aktif." cls="st-ok" %}{% else %}{% include "components/notice.html" with text="Grading nonaktif. API key belum diisi." %}{% endif %}
+    </div>
+    <div class="form-grid">
+      <div class="field">
+        <label class="field-label" for="provider_label">Label penyedia</label>
+        <input class="input" id="provider_label" name="provider_label" type="text" placeholder="Penyedia utama" value="{{ provider_label }}">
+        {% if form_errors.provider_label %}<p class="error-line">{{ form_errors.provider_label }}</p>{% endif %}
+      </div>
+      <div class="field">
+        <label class="field-label" for="model_name">Nama model</label>
+        <input class="input" id="model_name" name="model_name" type="text" placeholder="nama-model" value="{{ model_name }}">
+        {% if form_errors.model_name %}<p class="error-line">{{ form_errors.model_name }}</p>{% endif %}
+      </div>
+      <div class="field">
+        <label class="field-label" for="base_url">Alamat dasar</label>
+        <input class="input" id="base_url" name="base_url" type="text" placeholder="https://..." value="{{ base_url }}">
+        {% if form_errors.base_url %}<p class="error-line">{{ form_errors.base_url }}</p>{% else %}<p class="hint-line">Endpoint chat completions yang kompatibel.</p>{% endif %}
+      </div>
+      <div class="field">
+        <label class="field-label" for="api_key">API key</label>
+        <div class="key-row">
+          <input class="input" id="api_key" type="password" placeholder="Belum diisi" autocomplete="off" data-key-name="api_key" {% if api_key_submitted %}name="api_key"{% endif %} value="{{ api_key_masked }}">
+          <button class="btn" type="button" data-reveal="api_key"><span data-reveal-label>Reveal</span></button>
+        </div>
+        {% if form_errors.api_key %}<p class="error-line">{{ form_errors.api_key }}</p>{% elif not api_key_submitted %}<p class="hint-line" data-dirty-hide>Kosongkan kolom untuk menghapus.</p>{% endif %}
+      </div>
+      <div class="field">
+        <label class="field-label" for="temperature">Temperature</label>
+        <input class="input" id="temperature" name="temperature" type="number" step="0.1" min="0" max="2" value="{{ temperature }}">
+        {% if form_errors.temperature %}<p class="error-line">{{ form_errors.temperature }}</p>{% endif %}
+      </div>
+      <div class="field">
+        <label class="field-label" for="max_tokens">Max tokens</label>
+        <input class="input" id="max_tokens" name="max_tokens" type="number" min="1" max="16000" value="{{ max_tokens }}">
+        {% if form_errors.max_tokens %}<p class="error-line">{{ form_errors.max_tokens }}</p>{% endif %}
+      </div>
+      <div class="col-span-2">
+        <div class="field">
+          <label class="field-label" for="system_preamble">System preamble</label>
+          <textarea class="textarea" id="system_preamble" name="system_preamble" rows="4">{{ system_preamble }}</textarea>
+          {% if form_errors.system_preamble %}<p class="error-line">{{ form_errors.system_preamble }}</p>{% endif %}
+        </div>
+      </div>
+    </div>
+    <div class="test-row">
+      <button class="btn" type="submit" name="action" value="test">Uji koneksi</button>
+      <p class="hint-line">Menguji pengaturan yang tersimpan.</p>
+    </div>
+    <div class="embed-block">
+      <div class="card-head">
+        <h2>Embedding</h2>
+        {% if emb_configured %}{% include "components/notice.html" with text="Embedding aktif." cls="st-ok" %}{% else %}{% include "components/notice.html" with text="Embedding belum disetel." %}{% endif %}
+      </div>
+      <p class="desc-14">Dipakai untuk mengindeks berkas PDF/DOCX dan mengambil kutipan saat penilaian. Dimensi vector: {{ emb_dim }}.</p>
+      <div class="form-grid">
+        <div class="field">
+          <label class="field-label" for="emb_base_url">Alamat dasar embedding</label>
+          <input class="input" id="emb_base_url" name="emb_base_url" type="text" placeholder="https://..." value="{{ emb_base_url }}">
+          {% if form_errors.emb_base_url %}<p class="error-line">{{ form_errors.emb_base_url }}</p>{% endif %}
+        </div>
+        <div class="field">
+          <label class="field-label" for="emb_model_name">Nama model embedding</label>
+          <input class="input" id="emb_model_name" name="emb_model_name" type="text" placeholder="nama-model-embedding" value="{{ emb_model_name }}">
+          {% if form_errors.emb_model_name %}<p class="error-line">{{ form_errors.emb_model_name }}</p>{% endif %}
+        </div>
+        <div class="col-span-2">
+          <div class="field">
+            <label class="field-label" for="emb_api_key">API key embedding</label>
+            <div class="key-row">
+              <input class="input" id="emb_api_key" type="password" placeholder="Belum diisi" autocomplete="off" data-key-name="emb_api_key" {% if emb_api_key_submitted %}name="emb_api_key"{% endif %} value="{{ emb_api_key_masked }}">
+              <button class="btn" type="button" data-reveal="emb_api_key"><span data-reveal-label>Reveal</span></button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>
+{% endblock %}

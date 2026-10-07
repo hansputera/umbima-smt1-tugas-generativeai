@@ -1,0 +1,42 @@
+{% load nilai_tags %}
+<div class="lk">
+  <div class="lk-head">
+    <h3>Jawaban Anda</h3>
+    <span class="lk-status">{% if sub.submitted_at %}Terkirim {{ sub.submitted_at|fmt_date }}{% else %}Terkirim{% endif %}<span class="lk-sep">·</span>Pengumpulan terkunci</span>
+  </div>
+  <div class="lk-body">
+    {% if asg.type == "pg" %}
+    {% for row in lk_rows %}
+    <div class="lk-q">
+      {% if row.show_no %}<span class="label">Soal {{ forloop.counter }}</span>{% endif %}
+      <p class="lk-q-text">{{ row.question }}</p>
+      <ul class="lk-opts">
+        {% for o in row.opts %}
+        <li class="lk-opt{% if o.chosen %} is-chosen{% elif not o.correct %} is-muted{% endif %}">
+          <span>{{ o.key }}. {{ o.text }}</span>
+          {% if o.chosen and not revealed %}<span class="lk-choose">Pilihan Anda</span>{% endif %}
+          {% if o.correct %}<span class="status st-ok">{% include "icons/circle-check.html" %}<span>{{ o.right_label }}</span></span>{% endif %}
+          {% if o.wrong %}<span class="status st-danger">{% include "icons/circle-x.html" %}<span>Kurang tepat</span></span>{% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+      {% if row.unanswered %}<p class="lk-none">Soal ini tidak dijawab.</p>{% endif %}
+    </div>
+    {% endfor %}
+    {% elif asg.type == "essay" %}
+    <p class="lk-q-text lk-q-muted">{{ asg.questions.0.question }}</p>
+    <div class="lk-answer">
+      <span class="label">Jawaban Anda</span>
+      <div class="lk-answer-box">{% if answer_empty %}<span class="lk-muted">Jawaban kosong.</span>{% else %}{{ answer_display }}{% endif %}</div>
+    </div>
+    {% else %}
+    <p class="lk-q-text lk-q-muted">{{ asg.questions.0.question }}</p>
+    <div class="lk-answer">
+      <span class="label">Berkas Anda</span>
+      <div class="lk-answer-box">
+        <p class="lk-file">{% if sub.file_name %}{{ sub.file_name }}{% else %}—{% endif %}{% if sub.extraction_ok == False %}<span class="lk-fail">Teks tidak terbaca.</span>{% else %}<span class="lk-ok-text">Berkas terunggah.</span>{% endif %}</p>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>

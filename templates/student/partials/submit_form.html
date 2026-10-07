@@ -1,0 +1,66 @@
+<form method="post" action="" class="sf">
+  {% csrf_token %}
+  <input type="hidden" name="assignment_id" value="{{ asg.id }}">
+  {% if asg.type == "pg" %}<input type="hidden" name="answers" data-sf-answers value="{{ answers_json }}">{% endif %}
+
+  {% if asg.type == "essay" %}
+  <div class="field">
+    <label class="field-label" for="sf-answer">Jawaban</label>
+    <textarea class="textarea" id="sf-answer" name="answer" rows="8" placeholder="Tulis jawaban Anda...">{{ form_answer }}</textarea>
+    <p class="hint-line">Tulis jawaban secara lengkap.</p>
+  </div>
+  {% endif %}
+
+  {% if asg.type == "pg" %}
+  <div class="quiz" data-sf-quiz data-total="{{ total_questions }}">
+    {% if total_questions > 1 %}
+    <div class="quiz-nav-block">
+      <span class="label">Navigasi soal</span>
+      <div class="quiz-nav">
+        {% for row in quiz_rows %}
+        <button class="quiz-dot{% if forloop.first %} is-current{% endif %}" type="button" data-quiz-dot="{{ forloop.counter0 }}" aria-label="Soal {{ forloop.counter }}"{% if forloop.first %} aria-current="true"{% endif %}>{{ forloop.counter }}</button>
+        {% endfor %}
+      </div>
+      <p class="quiz-counter" data-quiz-counter>Soal 1 dari {{ total_questions }}{% if unanswered > 0 %} · sisa {{ unanswered }} soal belum dijawab{% endif %}</p>
+    </div>
+    {% endif %}
+
+    {% for row in quiz_rows %}
+    <div class="quiz-q{% if not forloop.first %} is-hidden{% endif %}" data-quiz-q="{{ forloop.counter0 }}">
+      <span class="label">{% if total_questions > 1 %}Soal {{ forloop.counter }}{% else %}Pertanyaan{% endif %}</span>
+      <p class="quiz-text">{{ row.question }}</p>
+      <div class="quiz-opts">
+        {% for o in row.opts %}
+        <label class="quiz-opt{% if o.checked %} is-checked{% endif %}">
+          <input type="radio" name="choice_{{ forloop.parentloop.counter0 }}" value="{{ o.key }}" class="quiz-radio"{% if o.checked %} checked{% endif %}>
+          <span class="quiz-opt-text"><span class="quiz-key">{{ o.key }}.</span> {{ o.text }}</span>
+        </label>
+        {% endfor %}
+      </div>
+    </div>
+    {% endfor %}
+
+    {% if total_questions > 1 %}
+    <div class="quiz-actions">
+      <button class="btn" type="button" data-quiz-prev disabled>Sebelumnya</button>
+      <button class="btn" type="button" data-quiz-next>Selanjutnya</button>
+    </div>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  {% if asg.type == "pdf" or asg.type == "docx" %}
+  <div class="field">
+    <label class="field-label" for="sf-file">Berkas {{ asg.type|upper }}</label>
+    <input class="file-input" id="sf-file" name="file" type="file" accept="{% if asg.type == 'pdf' %}.pdf{% else %}.docx{% endif %}">
+    <p class="hint-line">Ukuran wajar, teks akan diekstrak untuk penilaian.</p>
+  </div>
+  {% endif %}
+
+  {% if form_error %}<p class="error-line">{{ form_error }}</p>{% endif %}
+
+  <div class="sf-actions">
+    <button class="btn btn-primary" type="submit" data-sf-submit>Kirim jawaban</button>
+    <p class="sf-hint" data-sf-hint>{% if asg.type == "pg" %}Sisa {{ unanswered }} soal belum dijawab.{% else %}Setelah dikirim, jawaban terkunci dan tidak dapat diubah lagi.{% endif %}</p>
+  </div>
+</form>

@@ -1,0 +1,20 @@
+{% load nilai_tags %}
+<div class="block-row" data-question-row>
+  <div class="block-row-head">
+    <span class="label" data-renumber-text="Soal {n}">Soal {{ n }}</span>
+    <button class="icon-btn" type="button" data-list-remove="pg" data-aria-text="Hapus soal {n}" aria-label="Hapus soal {{ n }}" {% if n <= 1 %}hidden{% endif %}>{% include "icons/x.html" %}</button>
+  </div>
+  <textarea class="textarea" rows="2" placeholder="Tulis soal..." data-q-text>{{ q.question }}</textarea>
+  <div class="option-list" data-option-list>
+    {% for o in opts %}
+    <div class="option-row" data-option-row>
+      <input class="radio" type="radio" name="answer_key_{{ n }}" value="{{ o.key }}" data-q-answer data-aria-text="Kunci soal {n}: {key}" aria-label="Kunci soal {{ n }}: {{ o.key }}" {% if answer == o.key %}checked{% endif %}>
+      <span class="option-letter">{{ o.key }}</span>
+      <input class="input" placeholder="Opsi {{ o.key }}" data-option-text value="{{ o.text }}">
+    </div>
+    {% endfor %}
+  </div>
+  {% if opts|length < 6 %}
+  <div><button class="link-btn" type="button" data-add-option>+ Tambah opsi</button></div>
+  {% endif %}
+</div>

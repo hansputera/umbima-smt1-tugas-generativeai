@@ -1,0 +1,44 @@
+{% extends "course_base.html" %}
+{% load nilai_tags %}
+{% block course_content %}
+{% if empty_reason == "no_assignments" %}
+<div class="empty-box"><p>Belum ada tugas di kursus ini.</p></div>
+{% elif empty_reason == "no_students" %}
+<div class="empty-box"><p>Belum ada mahasiswa terdaftar.</p></div>
+{% else %}
+<div class="table-wrap card-table">
+  <table class="table">
+    <thead>
+      <tr>
+        <th class="th">Mahasiswa</th>
+        {% for col in columns %}
+        <th class="th th-right">{{ col.title }}</th>
+        {% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in sheet %}
+      <tr class="tr">
+        <td class="td td-nowrap fw500">{{ row.name }}</td>
+        {% for cell in row.cells %}
+        <td class="td td-right">
+          {% if cell.kind == "none" %}<span class="td-faint">—</span>
+          {% elif cell.kind == "published" %}<span class="fw500">{{ cell.nilai|fmt_nilai }}</span>
+          {% else %}<span class="td-muted">{{ cell.nilai|fmt_nilai }} (draf)</span>{% endif %}
+        </td>
+        {% endfor %}
+      </tr>
+      {% endfor %}
+    </tbody>
+    <tfoot>
+      <tr class="tr sheet-foot">
+        <td class="td fw500">Rata-rata</td>
+        {% for avg in averages %}
+        <td class="td td-right fw500">{% if avg is None %}—{% else %}{{ avg|fmt_nilai }}{% endif %}</td>
+        {% endfor %}
+      </tr>
+    </tfoot>
+  </table>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,5 @@
+<nav class="tabs" aria-label="Tab administrasi">
+  {% for tab in tabs %}
+  <a class="tab{% if tab.active %} is-active{% endif %}" href="{{ tab.href }}">{{ tab.label }}</a>
+  {% endfor %}
+</nav>

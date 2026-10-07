@@ -30,18 +30,18 @@ services:
 
   dev:
     profiles: ["dev"]
-    image: node:22-alpine
+    image: python:3.12-slim
     working_dir: /app
-    command: sh -c "npm install --no-audit --no-fund && npm run dev"
+    command: sh -c "pip install --no-cache-dir -r requirements.txt && python manage.py migrate --noinput && python manage.py seed && python manage.py runserver 0.0.0.0:3000"
     volumes:
       - .:/app
-      - dev_node_modules:/app/node_modules
     env_file:
       - path: .env.local
         required: false
     environment:
       DATABASE_URL: postgresql://nilai:nilai@db:5432/nilai
-      WATCHPACK_POLLING: "true"
+      DJANGO_DEBUG: "1"
+      PYTHONDONTWRITEBYTECODE: "1"
     ports:
       - "3001:3000"
     depends_on:
@@ -50,4 +50,3 @@ services:
 
 volumes:
   pgdata:
-  dev_node_modules:

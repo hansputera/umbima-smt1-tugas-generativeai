@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% load nilai_tags %}
+{% block content %}
+<div class="stack-4">
+  {% breadcrumb %}
+
+  <div class="asg-head">
+    <div class="asg-head-main">
+      {% activity_icon asg.type 40 %}
+      <div class="asg-head-text">
+        <h1>{{ asg.title }}</h1>
+        <p class="asg-sub">{{ asg.code }} — {{ asg.name }} · Pertemuan {{ asg.week }}: {{ asg.topic_title }}</p>
+        <div class="asg-meta">
+          <span class="asg-muted">{{ asg.type|type_label }}</span>
+          {% status_dot status_key %}
+          <span class="asg-muted">Rilis: {{ asg.release_mode|mode_label }}</span>
+          {% if sub.submitted_at %}<span class="asg-muted">Dikumpulkan {{ sub.submitted_at|fmt_date }}</span>{% endif %}
+        </div>
+        {% if status_hint %}<p class="asg-hint">{{ status_hint }}</p>{% endif %}
+      </div>
+    </div>
+    <a class="btn" href="/student/courses/{{ asg.course_id }}/topics/{{ asg.topic_id }}">Ke pertemuan</a>
+  </div>
+
+  {% if just_submitted %}
+  {% include "components/notice.html" with text="Terkirim! Jawaban Anda sudah terkunci dan tidak bisa diubah lagi." cls="st-ok" %}
+  {% endif %}
+  {% if waiting %}
+  {% include "components/notice.html" with text=waiting_text %}
+  {% endif %}
+
+  <div class="card asg-card">
+    {% if not sub and asg.type != "pg" %}
+    <div class="asg-question">
+      <span class="label">Pertanyaan</span>
+      <p class="asg-question-text">{{ asg.questions.0.question }}</p>
+    </div>
+    {% endif %}
+
+    {% if sub %}
+    {% include "student/partials/locked_view.html" %}
+    {% else %}
+    <div class="asg-form">
+      <h3>Kerjakan tugas</h3>
+      {% include "student/partials/submit_form.html" %}
+    </div>
+    {% endif %}
+
+    {% if grade %}
+    <div class="asg-grade">
+      <div class="asg-grade-head">
+        <div class="asg-grade-title">
+          <h3>Hasil penilaian</h3>
+          {% status_dot "published" %}
+        </div>
+        <p class="asg-grade-value">{{ grade.nilai|fmt_nilai }}<span class="asg-grade-pred">Predikat {{ grade.predikat }}</span></p>
+      </div>
+
+      {% if grade.criteria %}
+      <div class="asg-criteria">
+        {% for c in grade.criteria %}
+        <div class="asg-crit">
+          <div class="asg-crit-text">
+            <span class="asg-crit-name">{{ c.name }}<span class="asg-crit-weight">bobot {{ c.weight }}%</span></span>
+            <span class="asg-crit-comment">{{ c.comment }}</span>
+          </div>
+          <span class="asg-crit-score">{{ c.score }}/4</span>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <div class="asg-feedback">
+        <span class="label">Umpan balik</span>
+        <p class="asg-feedback-text">{{ grade.feedback }}</p>
+        {% if grade.summary %}
+        <span class="label asg-feedback-label2">Ringkasan</span>
+        <p class="asg-feedback-summary">{{ grade.summary }}</p>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

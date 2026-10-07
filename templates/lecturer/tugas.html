@@ -1,0 +1,47 @@
+{% extends "course_base.html" %}
+{% load nilai_tags %}
+{% block course_content %}
+{% if not rows %}
+<div class="empty-box"><p>Belum ada tugas di kursus ini.</p></div>
+{% else %}
+<div class="table-wrap card-table">
+  <table class="table">
+    <thead>
+      <tr>
+        <th class="th">Tugas</th>
+        <th class="th">Tipe</th>
+        <th class="th">Rilis</th>
+        <th class="th">Tenggat</th>
+        <th class="th th-right">Pengumpulan</th>
+        <th class="th">Rubrik</th>
+        <th class="th th-right">Buka</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for a in rows %}
+      <tr class="tr">
+        <td class="td">
+          <a class="td-link" href="/lecturer/assignments/{{ a.id }}">{{ a.title }}</a>
+          <span class="td-sub">Pertemuan {{ a.week }}</span>
+        </td>
+        <td class="td td-muted td-nowrap">{{ a.type|type_label }}</td>
+        <td class="td td-muted td-nowrap">{{ a.release_mode|mode_label }}</td>
+        <td class="td td-muted td-nowrap">{{ a.due_at|fmt_date }}</td>
+        <td class="td td-nowrap td-right">{{ a.submitted }} pengumpulan</td>
+        <td class="td td-nowrap">
+          {% if a.rubric_key == "pg" %}<span class="td-muted">—</span>
+          {% elif a.rubric_key == "empty" %}<a class="td-muted td-link" href="/lecturer/assignments/{{ a.id }}#rubrik">Belum diisi</a>
+          {% elif a.rubric_key == "ok" %}<a class="td-ok td-link" href="/lecturer/assignments/{{ a.id }}#rubrik">{{ a.rubric_count }} kriteria · 100%</a>
+          {% else %}<a class="td-danger td-link" href="/lecturer/assignments/{{ a.id }}#rubrik">{{ a.rubric_count }} kriteria · {{ a.rubric_weight }}%</a>
+          {% endif %}
+        </td>
+        <td class="td td-right">
+          <a class="btn btn-sm" href="/lecturer/assignments/{{ a.id }}">Buka</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block body %}
+<main class="login-wrap">
+  <div class="login-card">
+    <div class="login-brand">
+      {% if branding.has_logo %}
+      <img class="nav-logo" src="{{ branding.logo_src }}" alt="" width="28" height="28" aria-hidden>
+      {% else %}
+      <span class="brand-dot" aria-hidden></span>
+      {% endif %}
+      <span class="login-brand-name">{{ branding.app_name }}</span>
+    </div>
+    <h1>Masuk</h1>
+    <p class="login-sub">Selamat datang! Masuk untuk melanjutkan.</p>
+    <form class="login-form" method="post" action="{% url 'login' %}">
+      {% csrf_token %}
+      <div class="field">
+        <label class="field-label" for="email">Email</label>
+        <input class="input" id="email" name="email" type="email" autocomplete="email" placeholder="nama@contoh.com" required>
+      </div>
+      <div class="field">
+        <label class="field-label" for="password">Kata sandi</label>
+        <input class="input" id="password" name="password" type="password" autocomplete="current-password" required>
+        {% if error %}<p class="error-line">{{ error }}</p>{% endif %}
+      </div>
+      <button class="btn btn-primary btn-block" type="submit">Masuk</button>
+    </form>
+  </div>
+</main>
+{% endblock %}

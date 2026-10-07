@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% load nilai_tags %}
+{% block content %}
+{% admin_tabs %}
+{% breadcrumb %}
+<div class="page-header">
+  <div class="ph-main">
+    <h1>Periode</h1>
+    <p class="page-desc">Tahun ajaran / semester akademik. Kelas mata kuliah ditautkan ke satu periode.</p>
+  </div>
+  {% if not form %}
+  <div class="ph-action"><a class="btn btn-primary" href="?form=new">{% include "icons/plus.html" %}Tambah periode</a></div>
+  {% endif %}
+</div>
+<div id="row-error">{% flashes %}{% if row_error %}<p class="error-line">{{ row_error }}</p>{% endif %}</div>
+{% if form %}
+<div class="card card-pad form-stack-4">
+  <h2>{% if form.id %}Ubah periode{% else %}Tambah periode{% endif %}</h2>
+  <form method="post" action="" class="form-stack-4">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="save">
+    {% if form.id %}<input type="hidden" name="id" value="{{ form.id }}">{% endif %}
+    <div class="form-grid">
+      <div class="field">
+        <label class="field-label" for="p-name">Nama periode</label>
+        <input class="input" id="p-name" name="name" type="text" placeholder="2025/2026 Ganjil" value="{{ form.name }}">
+        {% if form_errors.name %}<p class="error-line">{{ form_errors.name }}</p>{% endif %}
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-primary" type="submit">Simpan</button>
+      <a class="btn" href="/admin/periods">Batal</a>
+    </div>
+  </form>
+</div>
+{% endif %}
+{% include "academics/partials/periods_table.html" %}
+{% endblock %}

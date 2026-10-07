@@ -1,0 +1,26 @@
+{% extends "course_base.html" %}
+{% load nilai_tags %}
+{% block course_content %}
+<div class="settings-narrow">
+  <div class="card card-pad form-stack-4">
+    <h2>Informasi mata kuliah</h2>
+    <p class="desc-14">Informasi ini diatur oleh admin dan tidak bisa diubah dari sini. Dosen mengelola pertemuan, tugas, rubrik, dan penilaian.</p>
+    <dl class="dl-grid">
+      <dt class="label">Kode</dt>
+      <dd>{{ course.code }}</dd>
+      <dt class="label">Nama mata kuliah</dt>
+      <dd>{{ course.name }}</dd>
+      <dt class="label">Periode</dt>
+      <dd>{{ course.period_name }}</dd>
+      <dt class="label">Kelas</dt>
+      <dd>{{ course.section }}</dd>
+      <dt class="label">Semester</dt>
+      <dd>{{ course.semester }}</dd>
+      <dt class="label">SKS</dt>
+      <dd>{{ course.sks }}</dd>
+      <dt class="label">Status</dt>
+      <dd>{% if course.archived_at %}{% status_dot "archived" %}{% else %}{% status_dot "aktif" %}{% endif %}</dd>
+    </dl>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% load nilai_tags %}
+{% block content %}
+{% admin_tabs %}
+{% breadcrumb %}
+<div class="page-header">
+  <div class="ph-main">
+    <h1>Penempatan</h1>
+    <p class="page-desc">Tempatkan mahasiswa ke kelas tiap periode. Penempatan hanya diatur admin.</p>
+  </div>
+</div>
+<div id="row-error">{% flashes %}{% if row_error %}<p class="error-line">{{ row_error }}</p>{% endif %}</div>
+<div class="placement-grid">
+  <div class="placement-left">
+    <div class="field">
+      <label class="field-label" for="placement-student-q">Pilih mahasiswa</label>
+      <div class="input-icon-wrap">
+        {% include "icons/search.html" %}
+        <input class="input input-icon" id="placement-student-q" type="search" placeholder="Nama atau email" data-filter-rows="#placement-students">
+      </div>
+    </div>
+    <input type="hidden" id="placement-student" value="{{ student.id|default:'' }}">
+    <div class="pick-list" id="placement-students">
+      <p class="list-empty" data-empty {% if students %}style="display:none"{% endif %}>Tidak ada mahasiswa yang cocok.</p>
+      {% for s in students %}
+      <form method="get" action="/admin/placement">
+        <input type="hidden" name="student" value="{{ s.id }}">
+        {% if period %}<input type="hidden" name="period" value="{{ period.id }}">{% endif %}
+        <button type="submit" class="pick-row{% if student and student.id == s.id %} is-on{% endif %}" data-search="{{ s.name|lower }} {{ s.email|lower }}">
+          <span class="pick-name">{{ s.name }}</span>
+          <span class="pick-meta"{% if student and student.id == s.id %} id="placement-count"{% endif %}>{{ s.email }} · {{ s.class_count }} kelas</span>
+        </button>
+      </form>
+      {% endfor %}
+    </div>
+  </div>
+  {% include "academics/partials/placement_right.html" %}
+</div>
+{% endblock %}

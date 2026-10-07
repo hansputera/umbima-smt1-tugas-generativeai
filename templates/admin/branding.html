@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% load nilai_tags %}
+{% block content %}
+{% admin_tabs %}
+{% breadcrumb %}
+<div class="page-header">
+  <div class="ph-main">
+    <h1>Aplikasi</h1>
+    <p class="page-desc">Nama aplikasi, teks footer, dan logo yang tampil di seluruh halaman.</p>
+  </div>
+  <div class="ph-action">
+    <button class="btn btn-primary" type="submit" form="branding-form">Simpan</button>
+  </div>
+</div>
+<div id="row-error">{% flashes %}</div>
+<div class="card card-pad">
+  <form id="branding-form" method="post" action="" enctype="multipart/form-data" class="form-stack-4">
+    {% csrf_token %}
+    <div class="form-grid">
+      <div class="field">
+        <label class="field-label" for="b-name">Nama aplikasi</label>
+        <input class="input" id="b-name" name="app_name" type="text" maxlength="50" value="{{ app_name }}">
+        {% if form_errors.app_name %}<p class="error-line">{{ form_errors.app_name }}</p>{% else %}<p class="hint-line">Tampil di tab browser, navbar, dan breadcrumb.</p>{% endif %}
+      </div>
+      <div class="field">
+        <label class="field-label" for="b-footer">Teks footer</label>
+        <input class="input" id="b-footer" name="footer_text" type="text" maxlength="120" placeholder="{{ app_name }}" value="{{ footer_text }}">
+        {% if form_errors.footer_text %}<p class="error-line">{{ form_errors.footer_text }}</p>{% else %}<p class="hint-line">Kosong = nama aplikasi (saat ini: {{ branding.footer_of }}).</p>{% endif %}
+      </div>
+    </div>
+    <div class="field">
+      <label class="field-label" for="b-logo">Logo</label>
+      <input class="file-input" id="b-logo" name="logo" type="file" accept="image/png,image/jpeg,image/webp,image/gif">
+      {% if form_errors.logo %}<p class="error-line">{{ form_errors.logo }}</p>{% else %}<p class="hint-line">PNG, JPG, WebP, atau GIF. Maksimal 512 KB. Kosongkan untuk mempertahankan logo saat ini.</p>{% endif %}
+    </div>
+    {% if branding.has_logo %}
+    <div class="logo-row">
+      <img class="logo-preview" src="{{ branding.logo_src }}" alt="Logo aplikasi saat ini" width="40" height="40">
+      <label class="logo-remove"><input type="checkbox" name="remove_logo"> Hapus logo</label>
+    </div>
+    {% endif %}
+  </form>
+</div>
+{% endblock %}

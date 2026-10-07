@@ -1,0 +1,16 @@
+{% load nilai_tags %}
+<a class="assignment-row" href="{{ r.href }}">
+  <span class="ar-icon" aria-hidden="true">
+    {% if r.type == "pg" %}{% include "icons/list-checks.html" %}{% elif r.type == "pdf" %}{% include "icons/file-down.html" %}{% elif r.type == "docx" %}{% include "icons/file-up.html" %}{% else %}{% include "icons/pen-line.html" %}{% endif %}
+  </span>
+  <span class="ar-text">
+    <span class="ar-title">{{ r.title }}</span>
+    <span class="ar-sub">{% if r.sub %}{{ r.sub }}{% else %}{{ r.type|type_label }} · {{ r.release_mode|mode_label }}{% endif %}</span>
+  </span>
+  <span class="ar-right">
+    {% status_dot r.status_key %}
+    <span class="ar-nilai">{{ r.nilai|fmt_nilai }}</span>
+    <span class="ar-arrow" aria-hidden="true">{% include "icons/arrow-right.html" %}</span>
+  </span>
+  {% if r.action %}<span class="sr-only">{{ r.action }}</span>{% endif %}
+</a>

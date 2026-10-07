@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% load nilai_tags %}
+{% block content %}
+{% admin_tabs %}
+<div class="stack-6">
+  {% breadcrumb %}
+  <div class="page-header">
+    <div class="ph-main">
+      <h1>Beranda</h1>
+      <p class="page-desc">Status model dan pengguna terbaru.</p>
+    </div>
+    <div class="ph-action"><a class="btn" href="/admin/settings">Setelan model</a></div>
+  </div>
+  <section class="section">
+    <div class="section-head"><h2>Status model</h2></div>
+    <div class="card card-pad">
+      <dl class="dl-grid">
+        <dt class="label">Label penyedia</dt>
+        <dd>{{ model_settings.provider_label|default:"—" }}</dd>
+        <dt class="label">Alamat dasar</dt>
+        <dd class="break-all">{{ model_settings.base_url|default:"—" }}</dd>
+        <dt class="label">Nama model</dt>
+        <dd>{{ model_settings.model_name|default:"—" }}</dd>
+        <dt class="label">Status penilaian</dt>
+        <dd>{% if model_ok %}{% status_dot "active" "Grading aktif" %}{% else %}{% status_dot "perlu_review" "Model belum disetel" %}{% endif %}</dd>
+        <dt class="label">Status embedding</dt>
+        <dd>{% if emb_ok %}{% status_dot "active" "Embedding aktif" %}{% else %}{% status_dot "perlu_review" "Embedding belum disetel" %}{% endif %}</dd>
+        <dt class="label">Terakhir disimpan</dt>
+        <dd>{{ model_settings.updated_at|fmt_date }}</dd>
+      </dl>
+    </div>
+  </section>
+  <section class="section">
+    <div class="section-head">
+      <h2>Pengguna terbaru</h2>
+      <a class="btn" href="/admin/users">Semua pengguna</a>
+    </div>
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th class="th">Nama</th>
+            <th class="th">Email</th>
+            <th class="th">Peran</th>
+            <th class="th">Status</th>
+            <th class="th">Ditambahkan</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for u in recent %}
+          <tr class="tr">
+            <td class="td">{{ u.name }}</td>
+            <td class="td">{{ u.email }}</td>
+            <td class="td">{{ u.role|role_label }}</td>
+            <td class="td">{% status_dot u.status %}</td>
+            <td class="td">{{ u.created_at|fmt_date }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+{% endblock %}

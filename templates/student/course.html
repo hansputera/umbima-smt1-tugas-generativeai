@@ -1,0 +1,81 @@
+{% extends "course_base.html" %}
+{% load nilai_tags %}
+{% block course_content %}
+<div class="topic-stack">
+{% if frame.topics %}
+{% for t in frame.topics %}
+<section class="topic-card">
+  <div class="topic-card-head">
+    <a class="topic-card-title" href="{{ t.href }}">Pertemuan {{ t.week }}: {{ t.title }}</a>
+    {% if t.a_count %}
+    <span class="topic-card-count">{{ t.answered }}/{{ t.a_count }} terkumpul</span>
+    {% endif %}
+  </div>
+  {% if t.items %}
+  {% for item in t.items %}
+  <a class="topic-item" href="{{ item.href }}">
+    {% activity_icon item.type 40 %}
+    <span class="topic-item-text">
+      <span class="topic-item-title">{{ item.title }}</span>
+      <span class="topic-item-meta">{% if item.kind == "materi" %}Materi{% else %}{{ item.type|type_label }}{% if item.due_at %} · Tenggat {{ item.due_at|fmt_date }}{% endif %}{% endif %}</span>
+    </span>
+    {% if item.kind == "assignment" %}
+    <span class="topic-item-right">
+      {% if item.grade_state == "published" and item.nilai is not None %}<span class="topic-item-nilai">{{ item.nilai|fmt_nilai }}</span>{% endif %}
+      {% if item.status %}<span class="ic-ok">{% include "icons/circle-check.html" %}</span>{% else %}<span class="ic-faint">{% include "icons/circle.html" %}</span>{% endif %}
+      <span class="sr-only">{% if item.status %}Sudah dikumpulkan{% else %}Belum dikumpulkan{% endif %}</span>
+    </span>
+    {% endif %}
+  </a>
+  {% endfor %}
+  {% else %}
+  <p class="topic-empty">Belum ada isi di pertemuan ini.</p>
+  {% endif %}
+</section>
+{% endfor %}
+{% else %}
+<div class="empty-box"><p>Belum ada pertemuan nih. Materi dan tugas akan muncul di sini setelah dosen menambahkannya.</p></div>
+{% endif %}
+</div>
+{% endblock %}
+
+{% block course_rail %}
+<div class="course-rail">
+<section class="rail-block">
+  <div class="label rail-block-head">Yang akan datang</div>
+  {% if upcoming %}
+  <div class="rail-list">
+    {% for item in upcoming %}
+    <a class="rail-item" href="{{ item.href }}">
+      {% activity_icon item.type 32 %}
+      <span class="rail-item-text">
+        <span class="rail-item-title">{{ item.title }}</span>
+        <span class="rail-item-meta">{{ item.type|type_label }} · Tenggat {{ item.due_at|fmt_date }}</span>
+      </span>
+    </a>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="rail-empty">Tidak ada tenggat mendatang.</p>
+  {% endif %}
+</section>
+<section class="rail-block">
+  <div class="label rail-block-head">Nilai terbaru</div>
+  {% if recent %}
+  <div class="rail-list">
+    {% for r in recent %}
+    <a class="rail-item rail-item-split" href="{{ r.href }}">
+      <span class="rail-item-text">
+        <span class="rail-item-title">{{ r.title }}</span>
+        <span class="rail-item-meta">{{ r.published_at|fmt_date }}</span>
+      </span>
+      <span class="rail-item-val">{{ r.nilai|fmt_nilai }} · {{ r.predikat }}</span>
+    </a>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="rail-empty">Belum ada nilai terbit.</p>
+  {% endif %}
+</section>
+</div>
+{% endblock %}

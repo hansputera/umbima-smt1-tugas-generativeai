@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+{% load nilai_tags %}
+{% block content %}
+<div class="stack-4">
+  {% breadcrumb %}
+
+  <div class="page-head">
+    <div class="page-head-main">
+      {% activity_icon assignment.type 40 %}
+      <div class="page-head-text">
+        <h1>{{ assignment.title }}</h1>
+        <p class="page-sub">{{ course.code }} — {{ course.name }} · Pertemuan {{ topic.week }}: {{ topic.title }}</p>
+        <div class="meta-row">
+          <span>{{ assignment.type|type_label }}</span>
+          <span>Rilis: {{ assignment.release_mode|mode_label }}</span>
+          {% if n_questions > 1 %}<span>{{ n_questions }} soal</span>{% endif %}
+        </div>
+      </div>
+    </div>
+    <a class="btn" href="/lecturer/courses/{{ course.id }}/topics/{{ topic.id }}">Ke pertemuan</a>
+  </div>
+
+  <div class="card card-pad">
+    <div class="stack-4 q-body">
+      {% if n_questions == 1 %}<span class="label">Pertanyaan</span>{% endif %}
+      {% for q in questions %}
+      <div class="{% if n_questions > 1 %}q-card{% else %}q-block{% endif %}">
+        {% if n_questions > 1 %}<span class="label">Soal {{ forloop.counter }}</span>{% endif %}
+        <p class="q-text">{{ q.question }}</p>
+        {% if assignment.type == "pg" %}
+        <p class="q-key">Kunci jawaban: <b>{{ q.answer_key|default_if_none:"—" }}</b></p>
+        {% if q.opts %}
+        <ul class="opt-list">
+          {% for o in q.opts %}<li><span>{{ o.key }}.</span> {{ o.text }}</li>{% endfor %}
+        </ul>
+        {% endif %}
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="card card-pad">
+    <h3>Mode rilis</h3>
+    <form method="post" action="" class="mode-form" data-mode-card>
+      {% csrf_token %}
+      <input type="hidden" name="action" value="save_mode">
+      <div class="mode-opts">
+        <label class="mode-opt">
+          <input type="radio" name="mode" value="review" {% if mode == "review" %}checked{% endif %}>
+          <span class="mode-opt-body">
+            <span class="mode-opt-title">Review dulu</span>
+            <span class="mode-opt-desc">Nilai disimpan sebagai draf sampai dosen menerbitkannya.</span>
+          </span>
+        </label>
+        <label class="mode-opt">
+          <input type="radio" name="mode" value="langsung" {% if mode == "langsung" %}checked{% endif %}>
+          <span class="mode-opt-body">
+            <span class="mode-opt-title">Langsung rilis</span>
+            <span class="mode-opt-desc">Nilai langsung terlihat mahasiswa saat disimpan.</span>
+          </span>
+        </label>
+      </div>
+
+      <div class="mode-warn" data-mode-warn {% if mode != "langsung" %}hidden{% endif %}>
+        <p>Nilai terbit tanpa review. Mahasiswa langsung melihat nilai, predikat, dan umpan balik. Nilai tetap bisa diubah setelahnya.</p>
+        <label class="mode-confirm"><input type="checkbox" name="confirm" {% if confirm %}checked{% endif %}> Saya mengerti nilai terbit tanpa review.</label>
+        {% for b in blockers %}<p class="error-line" data-blocker>{{ b }}</p>{% endfor %}
+      </div>
+
+      {% if mode_error %}<p class="error-line">{{ mode_error }}</p>{% endif %}
+      {% if mode_info %}{% include "components/notice.html" with text=mode_info cls="st-ok" %}{% endif %}
+
+      <div class="form-foot">
+        <button class="btn" type="submit" data-mode-submit {% if mode_disabled %}disabled{% endif %}>Simpan mode</button>
+        <p class="hint-line">Berlaku untuk semua pengumpulan.</p>
+      </div>
+    </form>
+  </div>
+
+  <form id="rubrik" method="post" action="" class="stack-3" data-rubric>
+    {% csrf_token %}
+    <input type="hidden" name="action" value="save_rubric">
+    <input type="hidden" name="assignment_id" value="{{ assignment.id }}">
+    <input type="hidden" name="criteria" id="criteria-json" value="{{ criteria_value }}">
+
+    <div class="rubric-head">
+      <h2>Rubrik</h2>
+      <button class="btn" type="button" data-rubric-add>{% include "icons/plus.html" %}Tambah kriteria</button>
+    </div>
+
+    <div class="card rubric-card">
+      <div class="empty-inset" data-rubric-empty {% if rubric_rows %}hidden{% endif %}>
+        <div class="empty-box"><p>Belum ada kriteria rubrik. Tambahkan kriteria pertama.</p></div>
+      </div>
+      <div class="rubric-scroll" data-rubric-table {% if not rubric_rows %}hidden{% endif %}>
+        <table class="rubric-table">
+          <thead>
+            <tr class="rubric-thead">
+              <th class="rub-c-grip"></th>
+              <th class="label rub-c-name">Kriteria</th>
+              <th class="label rub-c-weight">Bobot %</th>
+              <th class="label rub-c-level">Level 1</th>
+              <th class="label rub-c-level">Level 2</th>
+              <th class="label rub-c-level">Level 3</th>
+              <th class="label rub-c-level">Level 4</th>
+              <th class="label rub-c-level">Catatan</th>
+              <th class="rub-c-grip"></th>
+            </tr>
+          </thead>
+          <tbody data-rubric-body>
+            {% for r in rubric_rows %}{% include "lecturer/partials/rubric_row.html" with r=r n=forloop.counter %}{% endfor %}
+          </tbody>
+          <tfoot>
+            <tr class="rubric-foot">
+              <td></td>
+              <td colspan="2"><span class="rubric-total{% if rubric_sum != 100 %} is-bad{% endif %}" data-rubric-total>Total bobot: {{ rubric_sum_text }}%</span></td>
+              <td colspan="6" class="rubric-foot-act">
+                <button class="btn btn-primary" type="submit" data-rubric-submit {% if not rubric_rows or rubric_sum != 100 %}disabled{% endif %}>Simpan rubrik</button>
+              </td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+
+    {% if rubric_error %}<p class="error-line">{{ rubric_error }}</p>{% endif %}
+    {% if rubric_info %}{% include "components/notice.html" with text=rubric_info cls="st-ok" %}{% endif %}
+
+    <template data-rubric-template>
+      {% include "lecturer/partials/rubric_row.html" with r=None n=0 %}
+    </template>
+  </form>
+
+  <section class="section">
+    <div class="section-head"><h2>Pengumpulan</h2></div>
+    {% if not inbox %}
+    <div class="empty-box"><p>Belum ada pengumpulan. Jawaban mahasiswa akan muncul di sini.</p></div>
+    {% else %}
+    <div class="table-wrap card-table">
+      <table class="table">
+        <thead>
+          <tr>
+            <th class="th">Mahasiswa</th>
+            <th class="th">Status</th>
+            <th class="th">Dikumpulkan</th>
+            <th class="th">Nilai</th>
+            <th class="th th-right">Aksi</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for s in inbox %}
+          <tr class="tr">
+            <td class="td fw500">{{ s.student_name }}</td>
+            <td class="td">{% status_dot s.status_key %}</td>
+            <td class="td td-nowrap">{{ s.submitted_at|fmt_date }}</td>
+            <td class="td td-nowrap">{{ s.nilai|fmt_nilai }}</td>
+            <td class="td td-right"><a class="btn btn-sm" href="/lecturer/submissions/{{ s.id }}">Buka</a></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

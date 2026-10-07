@@ -1,0 +1,33 @@
+{% extends "course_base.html" %}
+{% load nilai_tags %}
+{% block course_content %}
+{% if not rows %}
+<div class="empty-box"><p>Belum ada tugas di kursus ini.</p></div>
+{% else %}
+<div class="table-wrap card-table">
+  <table class="table">
+    <thead>
+      <tr>
+        <th class="th">Tugas</th>
+        <th class="th">Tenggat</th>
+        <th class="th">Status</th>
+        <th class="th th-right">Nilai</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for a in rows %}
+      <tr class="tr">
+        <td class="td">
+          <a class="td-link fw500" href="/student/assignments/{{ a.id }}">{{ a.title }}</a>
+          <span class="td-sub">Pertemuan {{ a.week }}</span>
+        </td>
+        <td class="td td-muted td-nowrap">{{ a.due_at|fmt_date }}</td>
+        <td class="td">{% status_dot a.status_key %}</td>
+        <td class="td td-right fw500">{{ a.nilai|fmt_nilai }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+{% endblock %}

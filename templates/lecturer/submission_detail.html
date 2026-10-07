@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+{% load nilai_tags %}
+{% block content %}
+<div class="stack-4">
+  {% breadcrumb %}
+
+  <div class="page-head">
+    <div class="page-head-main">
+      {% activity_icon assignment.type 40 %}
+      <div class="page-head-text">
+        <h1>{{ student_name }}</h1>
+        <p class="page-sub">{{ assignment.title }} · {{ course.code }} — {{ course.name }}</p>
+        <div class="meta-row">
+          <span>{{ assignment.type|type_label }}</span>
+          <span>{{ submitted_at|fmt_date }}</span>
+        </div>
+      </div>
+    </div>
+    <a class="btn" href="/lecturer/assignments/{{ assignment.id }}">Ke tugas</a>
+  </div>
+
+  <div class="detail-grid">
+    <div class="detail-main">
+      <div class="card card-pad">
+        <div class="stack-4">
+          {% for item in questions %}
+          <div class="{% if n_questions > 1 %}q-card{% else %}q-block{% endif %}">
+            {% if n_questions > 1 %}<span class="label">Soal {{ forloop.counter }}</span>{% endif %}
+            <p class="q-text">{{ item.question }}</p>
+          </div>
+          {% endfor %}
+        </div>
+        <div class="answer-section">
+          <span class="label">Jawaban mahasiswa</span>
+          <div class="answer-body">
+            {% if is_pg %}
+              {% if n_questions == 0 %}
+              <span class="answer-empty">Belum ada jawaban dari mahasiswa.</span>
+              {% else %}
+              <ol class="ans-list">
+                {% for l in answer_lines %}
+                <li>
+                  <span class="answer-empty">Soal {{ l.n }}:</span>
+                  {% if l.empty %} <span class="answer-empty">Belum dijawab.</span>{% else %} <span class="fw500">{{ l.key }}</span>{{ l.suffix }}{% endif %}
+                </li>
+                {% endfor %}
+              </ol>
+              {% endif %}
+            {% elif assignment.type == "essay" %}
+              {% if answer_nonempty %}<span class="answer-pre">{{ answer_text }}</span>{% else %}<span class="answer-empty">Jawaban kosong.</span>{% endif %}
+            {% else %}
+              {% if extraction_ok == False %}<span class="answer-danger">Teks tidak terbaca.</span>
+              {% elif extracted_nonempty %}<span class="answer-scroll">{{ extracted_text }}</span>
+              {% else %}<span class="answer-empty">Berkas: {{ file_name|default_if_none:"—" }}</span>{% endif %}
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      {% if revisions %}
+      <section class="section">
+        <h2>Riwayat nilai</h2>
+        <div class="rev-card">
+          {% for r in revisions %}
+          <div class="rev-row">
+            <div class="rev-left">
+              {% status_dot r.state_key %}
+              <span class="rev-val">{{ r.nilai }} · {{ r.predikat }}</span>
+            </div>
+            <div class="rev-right">
+              <span>{{ r.changed_by }}</span><span class="rev-sep">·</span><span>{{ r.changed_at }}</span>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </section>
+      {% endif %}
+    </div>
+
+    <div class="detail-side">
+      {% if is_pg %}
+      <div class="card card-pad grade-editor">
+        <div class="ge-head">
+          <div class="ge-head-left">
+            <span class="label">Penilaian otomatis</span>
+            {% status_dot state_key %}
+          </div>
+          {% if has_grade %}<p class="ge-score">{{ shown_nilai }}<span class="ge-predikat">Predikat {{ shown_predikat }}</span></p>{% endif %}
+        </div>
+        <p class="ge-feedback">{{ pg_feedback }}</p>
+        {% if g_error %}<p class="error-line">{{ g_error }}</p>{% endif %}
+        {% if g_info %}{% include "components/notice.html" with text=g_info cls="st-ok" %}{% endif %}
+        <form method="post" action="" class="ge-pg-form">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="run_grade">
+          <input type="hidden" name="submission_id" value="{{ submission_id }}">
+          <input type="hidden" name="intent" value="publish">
+          <button class="btn btn-primary" type="submit">Hitung nilai</button>
+          <p class="hint-line">Dihitung dari kunci jawaban, tanpa model.</p>
+        </form>
+      </div>
+      {% else %}
+      <div class="card card-pad grade-editor" data-grade-editor>
+        <div class="ge-head">
+          <div class="ge-head-left">
+            <h3>Penilaian</h3>
+            {% status_dot state_key %}
+          </div>
+          <p class="ge-score"><span data-ge-live>{{ live_nilai }}</span><span class="ge-predikat">Predikat <span data-ge-predikat>{{ live_predikat }}</span></span></p>
+        </div>
+
+        <div class="ge-rows">
+          {% for r in e_rows %}
+          <div class="ge-row" data-ge-row data-id="{{ r.id }}" data-weight="{{ r.weight }}">
+            <div class="ge-row-head">
+              <span class="ge-row-name">{{ r.name }}<span class="ge-row-weight">bobot {{ r.weight }}%</span></span>
+              <select class="ge-score-select" aria-label="Skor {{ r.name }}" data-ge-score>
+                <option value="1" {% if r.score == 1 %}selected{% endif %}>1</option>
+                <option value="2" {% if r.score == 2 %}selected{% endif %}>2</option>
+                <option value="3" {% if r.score == 3 %}selected{% endif %}>3</option>
+                <option value="4" {% if r.score == 4 %}selected{% endif %}>4</option>
+              </select>
+            </div>
+            <input class="input" type="text" placeholder="Kutipan dari jawaban" data-ge-quote value="{{ r.quote }}">
+            <input class="input" type="text" placeholder="Komentar" data-ge-comment value="{{ r.comment }}">
+          </div>
+          {% endfor %}
+        </div>
+
+        {% if weight_sum != 100 %}<p class="error-line">Bobot rubrik berjumlah {{ weight_sum_text }}%, seharusnya 100%.</p>{% endif %}
+
+        <div class="ge-fields">
+          <label class="label" for="gf">Umpan balik</label>
+          <textarea class="textarea" id="gf" rows="3" data-ge-feedback>{{ e_feedback }}</textarea>
+          <label class="label" for="gs">Ringkasan</label>
+          <textarea class="textarea" id="gs" rows="2" data-ge-summary>{{ e_summary }}</textarea>
+        </div>
+
+        {% if g_error %}<p class="error-line">{{ g_error }}</p>{% endif %}
+        {% if g_info %}{% include "components/notice.html" with text=g_info cls="st-ok" %}{% endif %}
+        {% if g_raw %}
+        <div class="ge-raw-wrap">
+          <span class="label">Respons model mentah</span>
+          <pre class="ge-raw">{{ g_raw }}</pre>
+        </div>
+        {% endif %}
+
+        <div class="ge-foot">
+          <div class="ge-foot-left">
+            <button class="btn" type="button" data-run-btn>Nilai dengan model</button>
+            <p class="hint-line">{% if is_langsung %}Mode langsun rilis: nilai terbit saat disimpan.{% else %}Saran nilai dari model, Anda tetap bisa memperbaikinya.{% endif %}</p>
+          </div>
+          <div class="ge-foot-right">
+            <button class="btn" type="button" data-save-btn data-intent="draft">Simpan nilai</button>
+            <button class="btn btn-primary" type="button" data-save-btn data-intent="publish">Terbitkan</button>
+          </div>
+        </div>
+
+        <form method="post" action="" class="hidden-form" data-save-form>
+          {% csrf_token %}
+          <input type="hidden" name="action" value="save_grade">
+          <input type="hidden" name="submission_id" value="{{ submission_id }}">
+          <input type="hidden" name="criteria" data-ge-criteria value="{{ e_criteria_json }}">
+          <input type="hidden" name="feedback" data-ge-feedback-in value="{{ e_feedback }}">
+          <input type="hidden" name="summary" data-ge-summary-in value="{{ e_summary }}">
+          <input type="hidden" name="intent" value="draft" data-ge-intent>
+        </form>
+        <form method="post" action="" class="hidden-form" data-run-form>
+          {% csrf_token %}
+          <input type="hidden" name="action" value="run_grade">
+          <input type="hidden" name="submission_id" value="{{ submission_id }}">
+          <input type="hidden" name="intent" value="draft">
+        </form>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

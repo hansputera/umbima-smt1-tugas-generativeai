@@ -1,0 +1,29 @@
+{% load nilai_tags %}
+{% with btype=b.type|default:"richtext" %}
+<div class="block-row" data-block-row data-type="{{ btype }}" {% if b.file_name %}data-file-name="{{ b.file_name }}"{% else %}data-file-name=""{% endif %}>
+  <div class="block-row-head">
+    <div class="block-row-head-left">
+      <span class="label" data-renumber-text="Materi {n}">Materi {{ n }}</span>
+      <select class="select select-sm" data-block-type data-aria-text="Tipe materi {n}" aria-label="Tipe materi {{ n }}">
+        <option value="richtext" {% if btype == "richtext" %}selected{% endif %}>Teks</option>
+        <option value="link" {% if btype == "link" %}selected{% endif %}>Tautan</option>
+        <option value="file" {% if btype == "file" %}selected{% endif %}>Berkas</option>
+      </select>
+    </div>
+    <button class="icon-btn" type="button" data-list-remove="materi" data-aria-text="Hapus materi {n}" aria-label="Hapus materi {{ n }}">{% include "icons/x.html" %}</button>
+  </div>
+  <div class="block-fields" data-block-for="richtext" {% if btype != "richtext" %}hidden{% endif %}>
+    <textarea class="textarea" rows="3" placeholder="Tulis isi materi..." data-block-body>{{ b.body }}</textarea>
+  </div>
+  <div class="block-fields" data-block-for="link" {% if btype != "link" %}hidden{% endif %}>
+    <div class="form-grid-2">
+      <input class="input" placeholder="Judul tautan" data-block-body value="{{ b.body }}">
+      <input class="input" placeholder="https://..." data-block-url value="{{ b.url }}">
+    </div>
+  </div>
+  <div class="block-fields block-file" data-block-for="file" {% if btype != "file" %}hidden{% endif %}>
+    <input class="file-input" type="file" accept=".pdf,.docx" data-block-file>
+    <span class="hint-line" data-block-name>{% if b.file_name %}{{ b.file_name }}{% else %}Pilih PDF atau DOCX.{% endif %}</span>
+  </div>
+</div>
+{% endwith %}

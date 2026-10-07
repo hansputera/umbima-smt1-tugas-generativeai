@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% load nilai_tags %}
+{% block content %}
+<div class="stack-4">
+{% breadcrumb %}
+<div class="course-layout" id="course-layout">
+  {% course_sidebar %}
+  <div class="course-main">
+    <div class="course-head">
+      <div class="course-head-main">
+        <button class="course-show icon-btn" type="button" data-index-toggle="show" aria-label="Tampilkan indeks kursus" title="Tampilkan indeks kursus">{% include "icons/panel-left-open.html" %}</button>
+        <div class="course-title-block">
+          {% block course_title %}
+          <h1 class="course-title">{{ course.name }}</h1>
+          <p class="course-sub">{{ course.code }} · Semester {{ course.semester }} · {{ course.sks }} SKS</p>
+          {% endblock %}
+        </div>
+      </div>
+      <div class="course-action">{% block course_action %}{% endblock %}</div>
+    </div>
+    {% course_tabs %}
+    <div class="course-body">{% block course_content %}{% endblock %}</div>
+  </div>
+  {% block course_rail %}{% endblock %}
+</div>
+</div>
+{% endblock %}

@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% load nilai_tags %}
+{% block content %}
+{% admin_tabs %}
+{% breadcrumb %}
+<div class="page-header">
+  <div class="ph-main">
+    <h1>Mata kuliah</h1>
+    <p class="page-desc">Kelas mata kuliah per periode, beserta dosen pengampu dan mahasiswanya.</p>
+  </div>
+  {% if not form %}
+  <div class="ph-action"><a class="btn btn-primary" href="?form=new">{% include "icons/plus.html" %}Tambah kelas</a></div>
+  {% endif %}
+</div>
+<div id="row-error">{% flashes %}{% if row_error %}<p class="error-line">{{ row_error }}</p>{% endif %}</div>
+{% if form %}
+<div class="card card-pad form-stack-4">
+  <h2>{% if form.id %}Ubah kelas{% else %}Tambah kelas{% endif %}</h2>
+  <form method="post" action="" class="form-stack-4">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="save">
+    {% if form.id %}<input type="hidden" name="id" value="{{ form.id }}">{% endif %}
+    <div class="form-grid">
+      <div class="field">
+        <label class="field-label" for="c-code">Kode</label>
+        <input class="input" id="c-code" name="code" type="text" placeholder="IF201" value="{{ form.code }}">
+        {% if form_errors.code %}<p class="error-line">{{ form_errors.code }}</p>{% endif %}
+      </div>
+      <div class="field">
+        <label class="field-label" for="c-name">Nama</label>
+        <input class="input" id="c-name" name="name" type="text" placeholder="Basis Data" value="{{ form.name }}">
+        {% if form_errors.name %}<p class="error-line">{{ form_errors.name }}</p>{% endif %}
+      </div>
+      <div class="field">
+        <label class="field-label" for="c-period">Periode</label>
+        <select class="select" id="c-period" name="period_id">
+          {% for p in periods %}
+          <option value="{{ p.id }}" {% if form.period_id == p.id|stringformat:"s" %}selected{% endif %}>{{ p.name }}{% if p.is_active %} (aktif){% endif %}</option>
+          {% endfor %}
+        </select>
+        {% if form_errors.period_id %}<p class="error-line">{{ form_errors.period_id }}</p>{% endif %}
+      </div>
+      <div class="field">
+        <label class="field-label" for="c-section">Kelas</label>
+        <input class="input" id="c-section" name="section" type="text" placeholder="A" value="{{ form.section }}">
+        {% if form_errors.section %}<p class="error-line">{{ form_errors.section }}</p>{% endif %}
+      </div>
+      <div class="field">
+        <label class="field-label" for="c-semester">Semester</label>
+        <input class="input" id="c-semester" name="semester" type="number" min="1" max="14" value="{{ form.semester }}">
+        {% if form_errors.semester %}<p class="error-line">{{ form_errors.semester }}</p>{% endif %}
+      </div>
+      <div class="field">
+        <label class="field-label" for="c-sks">SKS</label>
+        <input class="input" id="c-sks" name="sks" type="number" min="1" max="10" value="{{ form.sks }}">
+        {% if form_errors.sks %}<p class="error-line">{{ form_errors.sks }}</p>{% endif %}
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-primary" type="submit">Simpan</button>
+      <a class="btn" href="/admin/courses">Batal</a>
+    </div>
+  </form>
+</div>
+{% endif %}
+<div class="filter-row">
+  <p class="counter" id="filter-counter">{{ courses|length }} dari {{ courses|length }} kelas</p>
+  <div class="field">
+    <label class="field-label" for="c-filter">Filter periode</label>
+    <select class="select" id="c-filter" data-filter-select="tbody.c-row" data-counter="#filter-counter">
+      <option value="all">Semua periode</option>
+      {% for p in periods %}<option value="{{ p.id }}">{{ p.name }}</option>{% endfor %}
+    </select>
+  </div>
+</div>
+{% include "academics/partials/courses_table.html" %}
+{% endblock %}

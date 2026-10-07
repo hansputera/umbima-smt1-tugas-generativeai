@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% load nilai_tags %}
+{% block content %}
+{% admin_tabs %}
+{% breadcrumb %}
+<div class="page-header">
+  <div class="ph-main">
+    <h1>{{ c.code }} — {{ c.name }}</h1>
+    <p class="page-desc">Kelas {{ c.section }} · {{ c.period.name }} · Semester {{ c.semester }} · {{ c.sks }} SKS</p>
+  </div>
+  <div class="ph-action"><a class="btn" href="/admin/courses">Kembali</a></div>
+</div>
+<div id="row-error">{% flashes %}{% if row_error %}<p class="error-line">{{ row_error }}</p>{% endif %}</div>
+<div class="card card-pad">
+  <dl class="dl-grid">
+    <dt class="label">Kode</dt>
+    <dd>{{ c.code }}</dd>
+    <dt class="label">Nama</dt>
+    <dd>{{ c.name }}</dd>
+    <dt class="label">Periode</dt>
+    <dd>{{ c.period.name }}</dd>
+    <dt class="label">Kelas</dt>
+    <dd>{{ c.section }}</dd>
+    <dt class="label">Semester</dt>
+    <dd>{{ c.semester }}</dd>
+    <dt class="label">SKS</dt>
+    <dd>{{ c.sks }}</dd>
+    <dt class="label">Status</dt>
+    <dd>{% if c.archived_at %}{% status_dot "archived" %}{% else %}{% status_dot "aktif" %}{% endif %}</dd>
+  </dl>
+</div>
+<section class="section">
+  <div class="filter-row">
+    <h2>Dosen pengampu</h2>
+    <div class="field">
+      <label class="field-label" for="assign-lecturer-q">Cari dosen</label>
+      <div class="input-icon-wrap">
+        {% include "icons/search.html" %}
+        <input class="input input-icon" id="assign-lecturer-q" type="search" placeholder="Nama atau email" data-filter-rows="#assign-lecturers">
+      </div>
+    </div>
+  </div>
+  <div class="pick-list" id="assign-lecturers">
+    <p class="list-empty" data-empty {% if lecturers %}style="display:none"{% endif %}>Tidak ada dosen yang cocok.</p>
+    {% for l in lecturers %}{% include "academics/partials/assign_lecturer_row.html" with p=l on=l.assigned %}{% endfor %}
+  </div>
+</section>
+<section class="section">
+  <div class="filter-row">
+    <h2>Mahasiswa</h2>
+    <div class="field">
+      <label class="field-label" for="assign-student-q">Cari mahasiswa</label>
+      <div class="input-icon-wrap">
+        {% include "icons/search.html" %}
+        <input class="input input-icon" id="assign-student-q" type="search" placeholder="Nama atau email" data-filter-rows="#assign-students">
+      </div>
+    </div>
+  </div>
+  <div class="pick-list" id="assign-students">
+    <p class="list-empty" data-empty {% if students %}style="display:none"{% endif %}>Tidak ada mahasiswa yang cocok.</p>
+    {% for s in students %}{% include "academics/partials/assign_student_row.html" with p=s on=s.enrolled %}{% endfor %}
+  </div>
+</section>
+{% endblock %}

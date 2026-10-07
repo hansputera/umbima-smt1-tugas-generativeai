@@ -1,0 +1,51 @@
+{% extends "course_base.html" %}
+{% load nilai_tags %}
+{% block course_content %}
+<section class="section">
+  <div class="section-head">
+    <h2>Dosen</h2>
+    <span class="section-action">{{ lecturer_rows|length }} orang</span>
+  </div>
+  {% if lecturer_rows %}
+  <div class="card people-list">
+    {% for l in lecturer_rows %}
+    <div class="person-row">
+      <span class="person-name">{{ l.name }}</span>
+      <span class="person-email">{{ l.email }}</span>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-box"><p>Belum ada dosen pengampu.</p></div>
+  {% endif %}
+</section>
+
+<section class="section">
+  <div class="section-head">
+    <h2>Mahasiswa</h2>
+    <span class="section-action">{{ student_rows|length }} terdaftar</span>
+  </div>
+  {% if student_rows %}
+  <div class="table-wrap card-table">
+    <table class="table">
+      <thead>
+        <tr>
+          <th class="th">Nama</th>
+          <th class="th">Email</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in student_rows %}
+        <tr class="tr">
+          <td class="td"><span class="fw500">{{ s.name }}</span></td>
+          <td class="td td-muted">{{ s.email }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-box"><p>Belum ada mahasiswa terdaftar.</p></div>
+  {% endif %}
+</section>
+{% endblock %}

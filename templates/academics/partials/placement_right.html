@@ -1,0 +1,42 @@
+<div id="placement-right" class="placement-right">
+  <div class="placement-head">
+    <div class="placement-head-main">
+      <h2>Kelas</h2>
+      <p class="summary-line">{% if student %}Penempatan untuk {{ student.name }}{% else %}Pilih mahasiswa terlebih dahulu.{% endif %}</p>
+    </div>
+    <div class="field">
+      <label class="field-label" for="placement-period">Periode</label>
+      <select class="select" id="placement-period" name="period" hx-get="/admin/placement" hx-include="#placement-period, #placement-student" hx-target="#placement-right" hx-swap="outerHTML" hx-trigger="change">
+        {% for p in periods %}
+        <option value="{{ p.id }}" {% if period and period.id == p.id %}selected{% endif %}>{{ p.name }}{% if p.is_active %} (aktif){% endif %}</option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr>
+          <th class="th">Kode</th>
+          <th class="th">Nama</th>
+          <th class="th">Kelas</th>
+          <th class="th">Dosen</th>
+          <th class="th th-center">Terdaftar</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in classes %}
+        <tr class="tr">
+          <td class="td"><span class="fw500">{{ c.code }}</span></td>
+          <td class="td">{{ c.name }}</td>
+          <td class="td">{{ c.section }}</td>
+          <td class="td td-muted">{{ c.lecturer_names|default:"—" }}</td>
+          <td class="td td-center">{% include "academics/partials/placement_check.html" with on=c.on %}</td>
+        </tr>
+        {% empty %}
+        <tr class="tr"><td class="td td-muted" colspan="5">Belum ada kelas di periode ini.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>

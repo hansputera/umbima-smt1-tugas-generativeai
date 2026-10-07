@@ -1,0 +1,2 @@
+{% for m in flashes %}{% if m.tags == "error" %}<p class="error-line">{{ m }}</p>{% elif m.tags == "success" %}<span class="status st-ok notice">{% include "icons/circle.html" %}<span>{{ m }}</span></span>{% elif m.tags == "warning" %}<span class="status st-warn notice">{% include "icons/alert-triangle.html" %}<span>{{ m }}</span></span>{% endif %}
+{% endfor %}

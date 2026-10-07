@@ -1,0 +1,95 @@
+{% extends "course_base.html" %}
+{% load nilai_tags %}
+{% block course_content %}
+<div class="topic-stack">
+<div class="topic-toolbar">
+  <a class="btn btn-primary" href="?form=new">{% include "icons/plus.html" %}Tambah pertemuan</a>
+</div>
+
+{% if form_open %}
+<div class="card card-pad form-stack-4">
+  <h2>Pertemuan baru</h2>
+  <form method="post" action="" class="form-stack-4">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="create_topic">
+    <div class="form-grid">
+      <div class="field">
+        <label class="field-label" for="t-title">Judul</label>
+        <input class="input" id="t-title" name="title" type="text" placeholder="Normalisasi" value="{{ form_values.title }}">
+        {% if form_errors.title %}<p class="error-line">{{ form_errors.title }}</p>{% endif %}
+      </div>
+      <div class="field">
+        <label class="field-label" for="t-week">Minggu</label>
+        <input class="input" id="t-week" name="week" type="number" min="1" max="30" placeholder="4" value="{{ form_values.week }}">
+        {% if form_errors.week %}<p class="error-line">{{ form_errors.week }}</p>{% endif %}
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-primary" type="submit">Simpan</button>
+      <a class="btn" href="/lecturer/courses/{{ course.id }}">Batal</a>
+    </div>
+  </form>
+</div>
+{% endif %}
+
+{% if frame.topics %}
+{% for t in frame.topics %}
+<section class="topic-card">
+  <div class="topic-card-head">
+    <a class="topic-card-title" href="{{ t.href }}">Pertemuan {{ t.week }}: {{ t.title }}</a>
+    <a class="topic-card-edit" href="{{ t.href }}" aria-label="Edit Pertemuan {{ t.week }}" title="Edit pertemuan">{% include "icons/pencil.html" %}</a>
+  </div>
+  {% if t.items %}
+  {% for item in t.items %}
+  <a class="topic-item" href="{{ item.href }}">
+    {% activity_icon item.type 40 %}
+    <span class="topic-item-text">
+      <span class="topic-item-title">{{ item.title }}</span>
+      <span class="topic-item-meta">{{ item.type|type_label }}{% if item.due_at %} · Tenggat {{ item.due_at|fmt_date }}{% endif %}</span>
+    </span>
+    {% if item.kind == "assignment" %}
+    <span class="topic-item-right">
+      <span class="topic-item-count">{{ item.submitted_count }}/{{ frame.enrolled }} terkumpul</span>
+      {% if frame.enrolled > 0 and item.submitted_count >= frame.enrolled %}
+      <span class="ic-ok">{% include "icons/circle-check.html" %}</span>
+      {% else %}
+      <span class="ic-faint">{% include "icons/circle.html" %}</span>
+      {% endif %}
+    </span>
+    {% endif %}
+  </a>
+  {% endfor %}
+  {% else %}
+  <p class="topic-empty">Belum ada aktivitas. Buka pertemuan untuk menambahkan materi atau tugas.</p>
+  {% endif %}
+  <div class="topic-card-foot">
+    <a class="link-quiet" href="{{ t.href }}?form=new">{% include "icons/plus.html" %}Tambah aktivitas</a>
+  </div>
+</section>
+{% endfor %}
+{% else %}
+<div class="empty-box"><p>Belum ada pertemuan. Tambahkan yang pertama, yuk!</p></div>
+{% endif %}
+</div>
+{% endblock %}
+
+{% block course_rail %}
+<section class="rail-block">
+  <div class="label rail-block-head">Yang akan datang</div>
+  {% if upcoming %}
+  <div class="rail-list">
+    {% for item in upcoming %}
+    <a class="rail-item" href="{{ item.href }}">
+      {% activity_icon item.type 32 %}
+      <span class="rail-item-text">
+        <span class="rail-item-title">{{ item.title }}</span>
+        <span class="rail-item-meta">{{ item.type|type_label }} · Tenggat {{ item.due_at|fmt_date }}</span>
+      </span>
+    </a>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="rail-empty">Tidak ada tenggat mendatang.</p>
+  {% endif %}
+</section>
+{% endblock %}

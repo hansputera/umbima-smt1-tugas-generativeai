@@ -1,0 +1,65 @@
+{% extends "course_base.html" %}
+{% load nilai_tags %}
+
+{% block course_title %}
+<h1 class="course-title">Pertemuan {{ topic.week }}: {{ topic.title }}</h1>
+<p class="course-sub">{{ course.code }} — {{ course.name }}</p>
+{% endblock %}
+
+{% block course_action %}
+<a class="btn" href="/student/courses/{{ course.id }}">Ke mata kuliah</a>
+{% endblock %}
+
+{% block course_content %}
+<div class="stack-6">
+<section class="section">
+  <div class="section-head"><h2>Materi</h2></div>
+  {% if block_rows %}
+  <div class="mat-card">
+    <ul class="mat-list">
+      {% for b in block_rows %}
+      <li class="mat-item">
+        <span class="mat-dot" aria-hidden="true"></span>
+        {% if b.type == "richtext" %}
+        <span class="mat-body">{{ b.body }}</span>
+        {% elif b.type == "link" %}
+        <a class="mat-link" href="{{ b.url|default:"#" }}" target="_blank" rel="noreferrer">{{ b.body|default:b.url }}</a>
+        {% else %}
+        <span class="mat-file">Berkas: {{ b.file_name }}</span>
+        {% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% else %}
+  <div class="empty-box"><p>Belum ada materi di pertemuan ini.</p></div>
+  {% endif %}
+</section>
+
+<section class="section">
+  <div class="section-head"><h2>Tugas</h2></div>
+  {% if rows %}
+  <div class="stack-3">
+    {% for r in rows %}
+    {% include "components/assignment_row.html" %}
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-box"><p>Belum ada tugas di pertemuan ini. Cek pertemuan lain, yuk!</p></div>
+  {% endif %}
+</section>
+
+<nav class="topic-nav">
+  {% if prev %}
+  <a class="topic-nav-link" href="{{ prev.href }}">{% include "icons/arrow-left.html" %}<span class="topic-nav-label">Pertemuan {{ prev.week }}: {{ prev.title }}</span></a>
+  {% else %}
+  <span></span>
+  {% endif %}
+  {% if next %}
+  <a class="topic-nav-link right" href="{{ next.href }}"><span class="topic-nav-label">Pertemuan {{ next.week }}: {{ next.title }}</span>{% include "icons/arrow-right.html" %}</a>
+  {% else %}
+  <span></span>
+  {% endif %}
+</nav>
+</div>
+{% endblock %}

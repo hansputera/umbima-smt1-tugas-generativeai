@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+{% load nilai_tags %}
+{% block content %}
+{% admin_tabs %}
+{% breadcrumb %}
+<div class="page-header">
+  <div class="ph-main">
+    <h1>Pengguna</h1>
+    <p class="page-desc">Akun admin, dosen, dan mahasiswa.</p>
+  </div>
+  {% if not form %}
+  <div class="ph-action btn-group">
+    <a class="btn" href="?import=1">{% include "icons/upload.html" %}Impor Excel</a>
+    <a class="btn btn-primary" href="?form=new">{% include "icons/plus.html" %}Tambah pengguna</a>
+  </div>
+  {% endif %}
+</div>
+<div id="row-error">{% flashes %}{% if row_error %}<p class="error-line">{{ row_error }}</p>{% endif %}</div>
+
+{% if result %}
+<div class="card result-card">
+  <div class="result-head">
+    <p class="result-line"><span class="fw500">{{ result.inserted }}</span> pengguna ditambahkan, {{ result.skipped|length }} dilewati, {{ result.errors|length }} baris gagal dari {{ result.total }} baris.</p>
+    <a class="btn" href="?import=1">Tutup</a>
+  </div>
+  {% if result.skipped %}
+  <p class="result-detail result-muted"><span class="fw500">Dilewati:</span> {{ result.skipped_text }}</p>
+  {% endif %}
+  {% if result.errors %}
+  <p class="result-detail result-danger"><span class="fw500">Gagal:</span> {{ result.errors_text }}</p>
+  {% endif %}
+</div>
+{% endif %}
+
+{% if panel_open and not form %}
+<div class="card card-pad form-stack-4">
+  <div class="card-head">
+    <h2>Impor pengguna dari Excel</h2>
+    <a class="btn" href="/admin/users/template" download>{% include "icons/download.html" %}Unduh template</a>
+  </div>
+  <p class="desc-14">Isi template lalu unggah berkas .xlsx. Maksimal 500 baris dan 2 MB. Semua pengguna baru memakai kata sandi default password123. Email yang sudah terdaftar akan dilewati.</p>
+
+  <form method="post" action="" enctype="multipart/form-data" class="form-stack-3">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="preview">
+    <div class="field">
+      <label class="field-label" for="imp-file">Berkas Excel (.xlsx)</label>
+      <input class="file-input" id="imp-file" name="file" type="file" accept=".xlsx">
+      {% if imp_error %}<p class="error-line">{{ imp_error }}</p>{% endif %}
+    </div>
+    {% if imp_file_errors %}<p class="error-line">{{ imp_file_errors|join:" " }}</p>{% endif %}
+    <div class="btn-group">
+      <button class="btn" type="submit">Pratinjau</button>
+      <a class="btn" href="?import=0">Batal</a>
+    </div>
+  </form>
+
+  {% if confirm_error %}<p class="error-line">{{ confirm_error }}</p>{% endif %}
+
+  {% if preview %}
+  <div class="form-stack-3">
+    <p class="summary-line"><span class="fw500">{{ preview.total }}</span> baris terbaca · <span class="fw500">{{ preview.importable }}</span> siap diimpor · {{ preview.skipped }} dilewati · {{ preview.errors }} gagal</p>
+    <div class="preview-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th class="th">Baris</th>
+            <th class="th">Nama</th>
+            <th class="th">Email</th>
+            <th class="th">Peran</th>
+            <th class="th">Status baris</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in preview.rows|slice:":100" %}
+          <tr class="tr">
+            <td class="td">{{ r.line }}</td>
+            <td class="td"><span class="fw500">{{ r.name|default:"—" }}</span></td>
+            <td class="td td-muted">{{ r.email|default:"—" }}</td>
+            <td class="td">{{ r.role|role_label|default:"—" }}</td>
+            <td class="td">
+              {% if r.error %}<span class="td-danger">{{ r.error }}</span>{% elif r.skip %}<span class="td-muted">{{ r.skip }}</span>{% else %}<span class="td-ok">Siap diimpor</span>{% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% if preview.rows|length > 100 %}<p class="preview-foot">Menampilkan 100 dari {{ preview.rows|length }} baris.</p>{% endif %}
+    </div>
+    {% if preview.importable > 0 %}
+    <form method="post" action="" class="btn-group">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="confirm">
+      <input type="hidden" name="rows" value="{{ preview.rows_json }}">
+      <button class="btn btn-primary" type="submit">Konfirmasi impor ({{ preview.importable }})</button>
+    </form>
+    {% else %}
+    <p class="desc-14">Tidak ada baris yang siap diimpor.</p>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endif %}
+
+{% if form %}
+<div class="card card-pad form-stack-4">
+  <h2>{% if form.id %}Ubah pengguna{% else %}Tambah pengguna{% endif %}</h2>
+  <form method="post" action="" class="form-stack-4">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="save">
+    {% if form.id %}<input type="hidden" name="id" value="{{ form.id }}">{% endif %}
+    <div class="form-grid">
+      <div class="field">
+        <label class="field-label" for="u-name">Nama</label>
+        <input class="input" id="u-name" name="name" type="text" placeholder="Nama lengkap" value="{{ form.name }}">
+        {% if form_errors.name %}<p class="error-line">{{ form_errors.name }}</p>{% endif %}
+      </div>
+      <div class="field">
+        <label class="field-label" for="u-email">Email</label>
+        <input class="input" id="u-email" name="email" type="email" placeholder="nama@nilai.test" value="{{ form.email }}">
+        {% if form_errors.email %}<p class="error-line">{{ form_errors.email }}</p>{% endif %}
+      </div>
+      <div class="field">
+        <label class="field-label" for="u-role">Peran</label>
+        <select class="select" id="u-role" name="role">
+          <option value="admin" {% if form.role == "admin" %}selected{% endif %}>Admin</option>
+          <option value="lecturer" {% if form.role == "lecturer" %}selected{% endif %}>Dosen</option>
+          <option value="student" {% if form.role == "student" %}selected{% endif %}>Mahasiswa</option>
+        </select>
+        {% if form_errors.role %}<p class="error-line">{{ form_errors.role }}</p>{% endif %}
+      </div>
+      <div class="field">
+        <label class="field-label" for="u-status">Status</label>
+        <select class="select" id="u-status" name="status">
+          <option value="active" {% if form.status == "active" %}selected{% endif %}>Aktif</option>
+          <option value="inactive" {% if form.status == "inactive" %}selected{% endif %}>Nonaktif</option>
+        </select>
+        {% if form_errors.status %}<p class="error-line">{{ form_errors.status }}</p>{% endif %}
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-primary" type="submit">Simpan</button>
+      <a class="btn" href="/admin/users">Batal</a>
+    </div>
+  </form>
+</div>
+{% endif %}
+
+{% include "admin/partials/users_table.html" %}
+{% endblock %}

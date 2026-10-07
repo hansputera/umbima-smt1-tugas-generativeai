@@ -1,0 +1,8 @@
+{% if p %}
+<label class="pick-check" data-search="{{ p.name|lower }} {{ p.email|lower }}">
+  <input type="checkbox" {% if on %}checked{% endif %} hx-post="/admin/courses/{{ c.id }}" hx-trigger="change" hx-target="closest .pick-check" hx-swap="outerHTML" hx-vals='{"action":"toggle_enrollment","student_id":"{{ p.id }}"}'>
+  <span class="pick-name">{{ p.name }}</span>
+  <span class="pick-meta">{{ p.email }}</span>
+</label>
+{% endif %}
+{% if oob %}<div id="row-error" hx-swap-oob="true">{% if row_error %}<p class="error-line">{{ row_error }}</p>{% endif %}</div>{% endif %}

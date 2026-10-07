@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Sistem penilaian mahasiswa">
+  <title>{% block title %}{{ branding.app_name }}{% endblock %}</title>
+  {% load static %}
+  <link rel="icon" href="/favicon.ico">
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+</head>
+<body>
+{% block body %}
+<div class="shell">
+  <header class="nav">
+    <div class="nav-inner">
+      <a class="nav-brand" href="{{ home_href }}">
+        {% if branding.has_logo %}
+        <img class="nav-logo" src="{{ branding.logo_src }}" alt="" width="28" height="28" aria-hidden>
+        {% else %}
+        <span class="brand-tile" aria-hidden>{{ branding.app_name|first|upper }}</span>
+        {% endif %}
+        <span class="nav-brand-name">{{ branding.app_name }}</span>
+      </a>
+      <nav class="nav-links">
+        {% for item in nav_items %}
+        <a class="nav-link{% if item.active %} is-active{% endif %}" href="{{ item.href }}">{{ item.label }}</a>
+        {% endfor %}
+      </nav>
+      <div class="nav-right">
+        <button type="button" class="icon-btn" aria-label="Notifikasi" title="Notifikasi">
+          {% include "icons/bell.html" %}
+          <span class="notif-dot" aria-hidden></span>
+        </button>
+        <details class="user-menu">
+          <summary>
+            <span class="user-name">{{ user_name }}</span>
+            <span class="user-role">{{ role_label }}</span>
+            <span class="user-trigger-chevron">{% include "icons/chevron-down.html" %}</span>
+          </summary>
+          <div class="menu" role="menu">
+            <div class="menu-head">
+              <div class="menu-name">{{ user_name }}</div>
+              <div class="menu-role">{{ role_label }}</div>
+            </div>
+            <form method="post" action="{% url 'logout' %}">
+              {% csrf_token %}
+              <button class="menu-btn" type="submit">{% include "icons/log-out.html" %}Keluar</button>
+            </form>
+          </div>
+        </details>
+      </div>
+    </div>
+  </header>
+  <main class="main">
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="foot">
+    <span>{{ branding.footer_of }}</span>
+    <span>{{ role_label }}</span>
+  </footer>
+</div>
+{% endblock %}
+<script src="{% static 'js/htmx.min.js' %}"></script>
+<script src="{% static 'js/app.js' %}"></script>
+<script>
+document.addEventListener("htmx:configRequest", function (e) {
+  var token = document.querySelector("[name=csrfmiddlewaretoken]");
+  if (token) e.detail.headers["X-CSRFToken"] = token.value;
+});
+document.addEventListener("click", function (e) {
+  var menus = document.querySelectorAll("details.user-menu");
+  menus.forEach(function (m) {
+    if (m.open && !m.contains(e.target)) m.open = false;
+  });
+});
+</script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

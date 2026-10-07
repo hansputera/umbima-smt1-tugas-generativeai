@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% load nilai_tags %}
+{% block content %}
+<div class="stack-6">
+  <div class="stack-2">
+    {% breadcrumb %}
+    <div class="page-header">
+      <div class="ph-main">
+        <h1>Tugas</h1>
+        <p class="page-desc">{{ description }}</p>
+      </div>
+    </div>
+  </div>
+
+  {% if not todo and not done %}
+  <div class="empty-box"><p>Belum ada tugas nih. Begitu dosen menambahkannya, tugas akan muncul di sini.</p></div>
+  {% else %}
+  <section class="section">
+    <div class="section-head"><h2>Belum dikerjakan</h2></div>
+    {% if todo %}
+    <div class="stack-3">
+      {% for r in todo %}{% include "components/assignment_row.html" %}{% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-box"><p>Semua tugas sudah dikumpulkan. Kerja bagus!</p></div>
+    {% endif %}
+  </section>
+
+  {% if done %}
+  <section class="section">
+    <div class="section-head"><h2>Sudah dikumpulkan</h2></div>
+    <div class="stack-3">
+      {% for r in done %}{% include "components/assignment_row.html" %}{% endfor %}
+    </div>
+  </section>
+  {% endif %}
+  {% endif %}
+</div>
+{% endblock %}

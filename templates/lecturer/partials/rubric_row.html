@@ -1,0 +1,29 @@
+<tr class="tr rubric-row" data-rubric-row data-id="{{ r.id|default:'' }}">
+  <td class="rub-c-grip">
+    <button type="button" class="rub-grip" draggable="true" aria-label="Pindahkan kriteria {{ n }}">{% include "icons/grip-vertical.html" %}</button>
+  </td>
+  <td class="rub-c-name">
+    <input class="input" type="text" placeholder="Nama kriteria" aria-label="Nama kriteria {{ n }}" data-f="name" value="{{ r.name|default_if_none:'' }}">
+  </td>
+  <td class="rub-c-weight">
+    <input class="input" type="number" min="0" max="100" aria-label="Bobot kriteria {{ n }}" data-f="weight" value="{{ r.weight|default:'0' }}">
+  </td>
+  <td class="rub-c-level">
+    <textarea class="textarea" rows="4" placeholder="Skor 1: ..." aria-label="Kriteria {{ n }} deskripsi skor 1" data-f="level_1">{{ r.level_1|default_if_none:'' }}</textarea>
+  </td>
+  <td class="rub-c-level">
+    <textarea class="textarea" rows="4" placeholder="Skor 2: ..." aria-label="Kriteria {{ n }} deskripsi skor 2" data-f="level_2">{{ r.level_2|default_if_none:'' }}</textarea>
+  </td>
+  <td class="rub-c-level">
+    <textarea class="textarea" rows="4" placeholder="Skor 3: ..." aria-label="Kriteria {{ n }} deskripsi skor 3" data-f="level_3">{{ r.level_3|default_if_none:'' }}</textarea>
+  </td>
+  <td class="rub-c-level">
+    <textarea class="textarea" rows="4" placeholder="Skor 4: ..." aria-label="Kriteria {{ n }} deskripsi skor 4" data-f="level_4">{{ r.level_4|default_if_none:'' }}</textarea>
+  </td>
+  <td class="rub-c-level">
+    <textarea class="textarea" rows="4" placeholder="Catatan prompt (opsional)" aria-label="Catatan prompt kriteria {{ n }}" data-f="prompt_notes">{{ r.prompt_notes|default_if_none:'' }}</textarea>
+  </td>
+  <td class="rub-c-remove">
+    <button type="button" class="rub-remove" aria-label="Hapus kriteria {{ n }}" data-rubric-remove>{% include "icons/x.html" %}</button>
+  </td>
+</tr>

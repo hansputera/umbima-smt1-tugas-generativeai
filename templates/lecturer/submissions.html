@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% load nilai_tags %}
+{% block content %}
+<div class="stack-6">
+  {% breadcrumb %}
+  <div class="page-header">
+    <div class="ph-main">
+      <h1>Pengumpulan</h1>
+      <p class="page-desc">Seluruh pengumpulan tugas pada mata kuliah Anda.</p>
+    </div>
+  </div>
+
+  <div class="stack-4" data-inbox>
+    <div class="inbox-filters">
+      <label class="inbox-filter">
+        <span class="label">Mata kuliah</span>
+        <select class="select inbox-course" data-inbox-course>
+          <option value="all">Semua mata kuliah</option>
+          {% for cid, label in courses %}
+          <option value="{{ cid }}">{{ label }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label class="inbox-filter">
+        <span class="label">Status</span>
+        <select class="select inbox-status" data-inbox-status>
+          <option value="all">Semua status</option>
+          <option value="terkumpul">Terkumpul</option>
+          <option value="perlu_review">Perlu review</option>
+          <option value="dinilai">Dinilai</option>
+          <option value="draft">Draft</option>
+        </select>
+      </label>
+      <p class="inbox-count" data-inbox-count>{{ count }} dari {{ count }} pengumpulan</p>
+    </div>
+
+    {% if not rows %}
+    <div class="empty-box" data-inbox-empty-none>Belum ada pengumpulan. Jawaban akan muncul di sini.</div>
+    <div class="empty-box" data-inbox-empty-filter hidden>Tidak ada pengumpulan yang cocok dengan filter.</div>
+    <div class="table-wrap card-table" data-inbox-table hidden>
+      <table class="table">
+        <thead>
+          <tr>
+            <th class="th">Mahasiswa</th>
+            <th class="th">Mata kuliah</th>
+            <th class="th">Tugas</th>
+            <th class="th">Status</th>
+            <th class="th">Nilai</th>
+            <th class="th">Dikumpulkan</th>
+            <th class="th th-right">Aksi</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty-box" data-inbox-empty-none hidden>Belum ada pengumpulan. Jawaban akan muncul di sini.</div>
+    <div class="empty-box" data-inbox-empty-filter hidden>Tidak ada pengumpulan yang cocok dengan filter.</div>
+    <div class="table-wrap card-table" data-inbox-table>
+      <table class="table">
+        <thead>
+          <tr>
+            <th class="th">Mahasiswa</th>
+            <th class="th">Mata kuliah</th>
+            <th class="th">Tugas</th>
+            <th class="th">Status</th>
+            <th class="th">Nilai</th>
+            <th class="th">Dikumpulkan</th>
+            <th class="th th-right">Aksi</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in rows %}
+          <tr class="tr" data-inbox-row data-course="{{ r.course_id }}" data-status="{{ r.status_key }}">
+            <td class="td fw500">{{ r.student_name }}</td>
+            <td class="td"><span class="fw500">{{ r.course_code }}</span><span class="td-pair">{{ r.course_name }}</span></td>
+            <td class="td"><span class="fw500">{{ r.assignment_title }}</span><span class="td-pair">{{ r.type|type_label }}</span></td>
+            <td class="td">{% status_dot r.status_key %}</td>
+            <td class="td td-nowrap">{% if r.published %}{{ r.nilai|fmt_nilai }}{% else %}—{% endif %}</td>
+            <td class="td td-nowrap">{{ r.submitted_at|fmt_date }}</td>
+            <td class="td td-right"><a class="btn btn-sm" href="/lecturer/submissions/{{ r.id }}">Buka</a></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

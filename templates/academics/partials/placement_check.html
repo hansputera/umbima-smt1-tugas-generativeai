@@ -1,0 +1,3 @@
+<input type="checkbox" class="chk" aria-label="Daftarkan ke {{ c.code }} kelas {{ c.section }}"
+  {% if on %}checked{% endif %}{% if not student %} disabled{% endif %}
+  {% if student %}hx-post="/admin/placement" hx-trigger="change" hx-target="closest td" hx-swap="innerHTML" hx-vals='{"action":"toggle","course_id":"{{ c.id }}","student_id":"{{ student.id }}"}'{% endif %}>

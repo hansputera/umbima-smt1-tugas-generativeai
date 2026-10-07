@@ -1,0 +1,8 @@
+<nav class="crumb-nav" aria-label="Navigasi halaman">
+  {% for c in crumbs %}
+  <span class="crumb-wrap">
+    {% if c.sep %}<span class="crumb-sep">{% include "icons/chevron-right.html" %}</span>{% endif %}
+    {% if c.href and not c.last %}<a class="crumb-link" href="{{ c.href }}">{{ c.label }}</a>{% else %}<span class="crumb{% if c.last %} is-last{% endif %}">{{ c.label }}</span>{% endif %}
+  </span>
+  {% endfor %}
+</nav>
